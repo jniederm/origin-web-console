@@ -47,9 +47,9 @@
   </div>
   <div class="list-pf-expansion collapse" ng-if="row.expanded" ng-class="{ in: row.expanded }">
     <div class="list-pf-container">
-      <div class="expanded-section resource-details">
+      <div class="expanded-section resource-details row-expanded-top">
         <h3>Details</h3>
-        <div class="row">
+        <div class="row full-width">
           <dl class="dl-horizontal col-md-6">
             <dt>State:</dt>
             <dd>
@@ -64,6 +64,13 @@
                 <a href="" ng-click="row.stopOvm()">Stop</a>
               </span>
             </dd>
+
+            <dt ng-if="row.isWindowsVM() && row.isOvmRunning()">Remote Desktop:</dt>
+            <dd ng-if="row.isWindowsVM() && row.isOvmRunning()">
+              <a href="" ng-if="row.isRdpService()" ng-click="row.onOpenRemoteDesktop()">Open Console</a>
+              <div ng-if="!row.isRdpService()">No RDP service defined</div>
+            </dd>
+
           </dl>
           <dl class="dl-horizontal col-md-6">
             <dt>Operating System:</dt>
