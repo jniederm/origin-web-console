@@ -12975,13 +12975,12 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "</div>\n" +
     "<div class=\"list-pf-expansion collapse\" ng-if=\"row.expanded\" ng-class=\"{ in: row.expanded }\">\n" +
     "<div class=\"list-pf-container\">\n" +
-    "<div class=\"row-expanded-top overview-ovm\">\n" +
-    "<h4 class=\"component-label section-label\">Details</h4>\n" +
     "<div class=\"row full-width\">\n" +
-    "<dl class=\"dl-horizontal col-md-6\">\n" +
-    "<dt>State:</dt>\n" +
-    "<dd>\n" +
-    "<div vm-state ovm=\"row.apiObject\"></div>\n" +
+    "<div class=\"col-md-6\">\n" +
+    "<div class=\"word-break\">\n" +
+    "<span class=\"vm-detail-key\">State:</span>\n" +
+    "<span vm-state ovm=\"row.apiObject\"></span>\n" +
+    "<span class=\"vm-detail-state-actions\">\n" +
     "<span class=\"bar-separated\" ng-if=\"row.canStartOvm()\">\n" +
     "<a href=\"\" ng-click=\"row.startOvm()\">Start</a>\n" +
     "</span>\n" +
@@ -12991,25 +12990,28 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "<span class=\"bar-separated\" ng-if=\"row.canStopOvm()\">\n" +
     "<a href=\"\" ng-click=\"row.stopOvm()\">Stop</a>\n" +
     "</span>\n" +
-    "</dd>\n" +
-    "<dt ng-if=\"row.isWindowsVM() && row.isOvmInRunningPhase()\">Remote Desktop:</dt>\n" +
-    "<dd ng-if=\"row.isWindowsVM() && row.isOvmInRunningPhase()\">\n" +
-    "<a href=\"\" ng-if=\"row.isRdpService()\" ng-click=\"row.onOpenRemoteDesktop()\">Open Console</a>\n" +
-    "<div ng-if=\"!row.isRdpService()\">No RDP service defined</div>\n" +
-    "</dd>\n" +
-    "<dt>Operating System:</dt>\n" +
-    "<dd>{{row.apiObject.metadata.labels['kubevirt.io/os'] || '--'}}</dd>\n" +
-    "<dt>Uptime:</dt>\n" +
-    "<dd>{{ row.apiObject._pod | podUptime }}</dd>\n" +
-    "</dl>\n" +
-    "<dl class=\"dl-horizontal col-md-6\">\n" +
+    "</span>\n" +
+    "</div>\n" +
+    "<div class=\"word-break\">\n" +
+    "<span class=\"vm-detail-key\">Uptime:</span>\n" +
+    "<span class=\"vm-detail-value\">{{ row.apiObject._pod | vmPodUptime }}</span>\n" +
+    "</div>\n" +
+    "<div class=\"word-break\">\n" +
+    "<span class=\"vm-detail-key\">Operating System:</span>\n" +
+    "<span class=\"vm-detail-value\">{{row.apiObject.metadata.labels['kubevirt.io/os'] || '--'}}</span>\n" +
+    "</div>\n" +
+    "<div class=\"word-break\" ng-if=\"row.isWindowsVM() && row.isOvmInRunningPhase()\">\n" +
+    "<span class=\"vm-detail-key\">Remote Desktop:</span>\n" +
+    "<a class=\"vm-detail-value\" href=\"\" ng-if=\"row.isRdpService()\" ng-click=\"row.onOpenRemoteDesktop()\">Open Console</a>\n" +
+    "<span class=\"vm-detail-value\" ng-if=\"!row.isRdpService()\">No RDP service defined</span>\n" +
+    "</div>\n" +
+    "</div>\n" +
+    "<div class=\"col-md-6\">\n" +
     "<div ng-if=\"row.apiObject._pod && row.state.showMetrics\">\n" +
-    "\n" +
     "<deployment-metrics pods=\"[row.apiObject._pod]\" containers=\"row.apiObject._pod.spec.containers\" profile=\"compact\" alerts=\"row.state.alerts\" class=\"overview-metrics\">\n" +
     "</deployment-metrics>\n" +
     "<h4 class=\"h5\">Usage <small>Last 15 Minutes</small></h4>\n" +
     "</div>\n" +
-    "</dl>\n" +
     "</div>\n" +
     "</div>\n" +
     "</div>\n" +
@@ -13019,7 +13021,7 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
 
 
   $templateCache.put('views/overview/_vm-status.html',
-    " <span ng-switch=\"status\">\n" +
+    " <span ng-switch=\"status\" class=\"vm-detail-value\">\n" +
     "<span class=\"pficon pficon-on-running\" ng-style=\"{color: '#3f9c35'}\" ng-switch-when=\"Running\"></span>\n" +
     "<span class=\"spinner spinner-xs spinner-inline\" ng-switch-when=\"Pending\"></span>\n" +
     "<span class=\"spinner spinner-xs spinner-inline\" ng-switch-when=\"Scheduling\"></span>\n" +

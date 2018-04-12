@@ -47,13 +47,13 @@
   </div>
   <div class="list-pf-expansion collapse" ng-if="row.expanded" ng-class="{ in: row.expanded }">
     <div class="list-pf-container">
-      <div class="row-expanded-top overview-ovm">
-        <h4 class="component-label section-label">Details</h4>
         <div class="row full-width">
-          <dl class="dl-horizontal col-md-6">
-            <dt>State:</dt>
-            <dd>
-              <div vm-state ovm="row.apiObject"></div>
+          <div class="col-md-6">
+            <div class="word-break">
+              <span class="vm-detail-key">State:</span>
+
+              <span vm-state ovm="row.apiObject"></span>
+              <span class="vm-detail-state-actions">
               <span class="bar-separated" ng-if="row.canStartOvm()">
                 <a href="" ng-click="row.startOvm()">Start</a>
               </span>
@@ -63,23 +63,27 @@
               <span class="bar-separated" ng-if="row.canStopOvm()">
                 <a href="" ng-click="row.stopOvm()">Stop</a>
               </span>
-            </dd>
+             </span>
+            </div>
 
-            <dt ng-if="row.isWindowsVM() && row.isOvmInRunningPhase()">Remote Desktop:</dt>
-            <dd ng-if="row.isWindowsVM() && row.isOvmInRunningPhase()">
-              <a href="" ng-if="row.isRdpService()" ng-click="row.onOpenRemoteDesktop()">Open Console</a>
-              <div ng-if="!row.isRdpService()">No RDP service defined</div>
-            </dd>
+            <div class="word-break">
+              <span class="vm-detail-key">Uptime:</span>
+              <span class="vm-detail-value">{{ row.apiObject._pod | vmPodUptime }}</span>
+            </div>
 
-            <dt>Operating System:</dt>
-            <dd>{{row.apiObject.metadata.labels['kubevirt.io/os'] || '--'}}</dd>
+            <div class="word-break">
+              <span class="vm-detail-key">Operating System:</span>
+              <span class="vm-detail-value">{{row.apiObject.metadata.labels['kubevirt.io/os'] || '--'}}</span>
+            </div>
 
-            <dt>Uptime:</dt>
-            <dd>{{ row.apiObject._pod | podUptime }}</dd>
-          </dl>
-          <dl class="dl-horizontal col-md-6">
+            <div class="word-break" ng-if="row.isWindowsVM() && row.isOvmInRunningPhase()">
+              <span class="vm-detail-key">Remote Desktop:</span>
+              <a class="vm-detail-value" href="" ng-if="row.isRdpService()" ng-click="row.onOpenRemoteDesktop()">Open Console</a>
+              <span class="vm-detail-value" ng-if="!row.isRdpService()">No RDP service defined</span>
+            </div>
+          </div>
+          <div class="col-md-6">
             <div ng-if="row.apiObject._pod && row.state.showMetrics">
-            <!--<div ng-if="row.apiObject._pod">-->
               <deployment-metrics
                 pods="[row.apiObject._pod]"
                 containers="row.apiObject._pod.spec.containers"
@@ -89,9 +93,8 @@
               </deployment-metrics>
               <h4 class="h5">Usage <small>Last 15 Minutes</small></h4>
             </div>
-          </dl>
+          </div>
         </div>
-      </div>
     </div>
   </div>
 </div>

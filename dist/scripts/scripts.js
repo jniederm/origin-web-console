@@ -14069,7 +14069,7 @@ state: "<"
 templateUrl: "views/overview/_virtual-machine-row.html"
 });
 var n = 3389;
-angular.module("openshiftConsole").filter("podUptime", function() {
+angular.module("openshiftConsole").filter("vmPodUptime", function() {
 return function(e) {
 var t = _(_.get(e, "status.containerStatuses")).filter({
 name: "compute"
@@ -14079,7 +14079,7 @@ return t ? moment(t).fromNow(!0) : "--";
 }), angular.module("openshiftConsole").directive("vmState", function() {
 function e(e) {
 var t = _.get(e, "_vm.status.phase");
-return void 0 !== t ? t : _.get(e, ".spec.running") ? "Unknown" : "Off";
+return void 0 !== t ? t : _.get(e, ".spec.running") ? "Unknown" : "Not Running";
 }
 function t(t) {
 return e(t.ovm);

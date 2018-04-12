@@ -251,7 +251,7 @@
     };
   }
 
-  angular.module('openshiftConsole').filter('podUptime', function () {
+  angular.module('openshiftConsole').filter('vmPodUptime', function () {
     return function (pod) {
       var computeContainerStartTime = _(_.get(pod, 'status.containerStatuses'))
         .filter({ name: "compute" })
@@ -272,7 +272,7 @@
         return vmPhase;
       }
       if (!_.get(ovm, '.spec.running')) {
-        return "Off";
+        return "Not Running";
       }
       return "Unknown";
     }
