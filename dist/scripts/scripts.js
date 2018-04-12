@@ -13983,6 +13983,8 @@ v.OfflineVirtualMachineVersion = m.offlineVirtualMachine, _.extend(v, l.ui), v.a
 return !_.get(v.apiObject, "metadata.deletionTimestamp") && s.canI(m.offlineVirtualMachine, "delete");
 }, v.projectName = o.project, v.isOvmRunning = function() {
 return v.apiObject.spec.running;
+}, v.isOvmInRunningPhase = function() {
+return v.isOvmRunning() && v.apiObject._vm && "Running" === _.get(v.apiObject, "_pod.status.phase");
 }, v.startOvm = function() {
 g(!0);
 }, v.stopOvm = function() {
@@ -13994,7 +13996,7 @@ return !v.isOvmRunning();
 }, v.canStopOvm = function() {
 return v.isOvmRunning();
 }, v.canRestartOvm = function() {
-return v.isOvmRunning() && v.apiObject._vm && "Running" === _.get(v.apiObject, "_pod.status.phase");
+return v.isOvmInRunningPhase();
 }, v.isWindowsVM = function() {
 var e = v.apiObject, t = _.get(e, 'metadata.labels["kubevirt.io/os"]');
 return t && _.startsWith(t, "win");
@@ -14027,7 +14029,7 @@ var n = 3389;
 angular.module("openshiftConsole").filter("podUptime", function() {
 return function(e) {
 var t = _.get(e, "status.startTime");
-return t ? moment(t).fromNow(!0) : "-";
+return t ? moment(t).fromNow(!0) : "--";
 };
 }), angular.module("openshiftConsole").directive("vmState", function() {
 function e(e) {

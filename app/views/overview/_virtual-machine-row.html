@@ -65,8 +65,8 @@
               </span>
             </dd>
 
-            <dt ng-if="row.isWindowsVM() && row.isOvmRunning()">Remote Desktop:</dt>
-            <dd ng-if="row.isWindowsVM() && row.isOvmRunning()">
+            <dt ng-if="row.isWindowsVM() && row.isOvmInRunningPhase()">Remote Desktop:</dt>
+            <dd ng-if="row.isWindowsVM() && row.isOvmInRunningPhase()">
               <a href="" ng-if="row.isRdpService()" ng-click="row.onOpenRemoteDesktop()">Open Console</a>
               <div ng-if="!row.isRdpService()">No RDP service defined</div>
             </dd>

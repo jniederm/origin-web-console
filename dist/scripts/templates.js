@@ -12992,15 +12992,15 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "<a href=\"\" ng-click=\"row.stopOvm()\">Stop</a>\n" +
     "</span>\n" +
     "</dd>\n" +
-    "<dt ng-if=\"row.isWindowsVM() && row.isOvmRunning()\">Remote Desktop:</dt>\n" +
-    "<dd ng-if=\"row.isWindowsVM() && row.isOvmRunning()\">\n" +
+    "<dt ng-if=\"row.isWindowsVM() && row.isOvmInRunningPhase()\">Remote Desktop:</dt>\n" +
+    "<dd ng-if=\"row.isWindowsVM() && row.isOvmInRunningPhase()\">\n" +
     "<a href=\"\" ng-if=\"row.isRdpService()\" ng-click=\"row.onOpenRemoteDesktop()\">Open Console</a>\n" +
     "<div ng-if=\"!row.isRdpService()\">No RDP service defined</div>\n" +
     "</dd>\n" +
     "</dl>\n" +
     "<dl class=\"dl-horizontal col-md-6\">\n" +
     "<dt>Operating System:</dt>\n" +
-    "<dd>{{row.apiObject.metadata.labels['kubevirt.io/os'] || '-'}}</dd>\n" +
+    "<dd>{{row.apiObject.metadata.labels['kubevirt.io/os'] || '--'}}</dd>\n" +
     "<dt>Uptime:</dt>\n" +
     "<dd>{{ row.apiObject._pod | podUptime }}</dd>\n" +
     "</dl>\n" +

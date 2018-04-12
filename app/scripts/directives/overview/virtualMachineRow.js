@@ -142,6 +142,11 @@
     row.isOvmRunning = function () {
       return row.apiObject.spec.running;
     };
+    row.isOvmInRunningPhase = function () {
+      return row.isOvmRunning() &&
+        row.apiObject._vm &&
+        _.get(row.apiObject, '_pod.status.phase') === 'Running';
+    };
     row.startOvm = function () {
       setOvmRunning(true);
     };
@@ -162,9 +167,7 @@
       return row.isOvmRunning();
     };
     row.canRestartOvm = function () {
-      return row.isOvmRunning() &&
-        row.apiObject._vm &&
-        _.get(row.apiObject, '_pod.status.phase') === 'Running';
+      return row.isOvmInRunningPhase();
     };
     row.isWindowsVM = function () {
       var ovm = row.apiObject;
@@ -229,7 +232,7 @@
     }
 
     function getOvmStatusFromScope(scope) {
-      return getOvmStatus(scope.ovm)
+      return getOvmStatus(scope.ovm);
     }
 
     function controller ($scope) {
