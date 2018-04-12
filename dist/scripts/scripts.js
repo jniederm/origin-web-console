@@ -14027,7 +14027,7 @@ var n = 3389;
 angular.module("openshiftConsole").filter("podUptime", function() {
 return function(e) {
 var t = _.get(e, "status.startTime");
-return t ? moment(t).fromNow(!0) : "-";
+return t ? moment(t).fromNow(!0) : "--";
 };
 }), angular.module("openshiftConsole").directive("vmState", function() {
 function e(e) {

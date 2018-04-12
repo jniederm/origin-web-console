@@ -6228,7 +6228,7 @@ kubernetes-container-terminal .terminal-actions .spinner{top:5px}
 .membership .content-pane .service-account .select-role{padding-bottom:5px;width:auto}
 @media (min-width:992px){.membership .content-pane .service-account .select-role{width:150px}
 }
-.add-config-to-application .application-select,.full-width{width:100%}
+.add-config-to-application .application-select,.full-width,.overview-ovm h4{width:100%}
 .membership .content-pane .col-add-role,.membership .content-pane .col-heading,.membership .content-pane .col-name,.membership .content-pane .item-row,.membership .content-pane [flex-collapse-fix],.membership .content-pane [flex]{flex-shrink:0;flex-basis:auto}
 .membership .ui-select-bootstrap>.ui-select-choices{max-height:300px}
 notification-drawer-wrapper .blank-state-pf-title{font-size:15px}

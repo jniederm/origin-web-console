@@ -12975,8 +12975,8 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "</div>\n" +
     "<div class=\"list-pf-expansion collapse\" ng-if=\"row.expanded\" ng-class=\"{ in: row.expanded }\">\n" +
     "<div class=\"list-pf-container\">\n" +
-    "<div class=\"expanded-section resource-details row-expanded-top\">\n" +
-    "<h3>Details</h3>\n" +
+    "<div class=\"row-expanded-top overview-ovm\">\n" +
+    "<h4 class=\"component-label section-label\">Details</h4>\n" +
     "<div class=\"row full-width\">\n" +
     "<dl class=\"dl-horizontal col-md-6\">\n" +
     "<dt>State:</dt>\n" +
@@ -13000,7 +13000,7 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "</dl>\n" +
     "<dl class=\"dl-horizontal col-md-6\">\n" +
     "<dt>Operating System:</dt>\n" +
-    "<dd>{{row.apiObject.metadata.labels['kubevirt.io/os'] || '-'}}</dd>\n" +
+    "<dd>{{row.apiObject.metadata.labels['kubevirt.io/os'] || '--'}}</dd>\n" +
     "<dt>Uptime:</dt>\n" +
     "<dd>{{ row.apiObject._pod | podUptime }}</dd>\n" +
     "</dl>\n" +
