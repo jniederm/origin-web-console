@@ -179,33 +179,74 @@
       return !_.isEmpty(ovm.services);
     };
 
+    function rdpPortFinder(service) {
+      return _.find(_.get(service, 'spec.ports'), function (portObj) {
+        return portObj.targetPort === RDP_PORT;
+      });
+    }
+
+    function getAddressPort(service, ovm) {
+      var rdpPortObj = rdpPortFinder(service);
+      if (!rdpPortObj) {
+        return ;
+      }
+
+      var type = _.get(service, 'spec.type');
+      var port = _.get(rdpPortObj, "port");
+      var address;
+      switch (type) {
+        case 'LoadBalancer':
+          var externalIPs = _.get(service, 'spec.externalIPs');
+          if (_.isEmpty(externalIPs)) {
+            console.warn("externalIP is not defined for the LoadBalancer RDP Service: ", service, ovm);
+            return ;
+          }
+          address = externalIPs[0];
+          break;
+        case 'ClusterIP':
+          var clusterIP = _.get(service, 'spec.clusterIP');
+          if (_.isEmpty(clusterIP)) {
+            console.warn("clusterIP is not defined for the ClusterIP RDP Service: ", service, ovm);
+            return ;
+          }
+          address = clusterIP;
+          break;
+        case 'NodePort':
+          // TODO: Once verified, Service's nodeIP shall be used. Until then, IP from vm-pod-node is more safe
+          port = _.get(rdpPortObj, "nodePort");
+          var nodeIP = _.get(ovm, '_pod.status.hostIP');
+          if (_.isEmpty(nodeIP)) {
+            console.warn("nodeIP (pod.status.hostIP) is not yet known, using NodePort RDP Service: ", service, ovm);
+            return ;
+          }
+          address = nodeIP;
+          break;
+        default:
+          console.error('Unrecognized Service type: ', service);
+          return null;
+      }
+
+      console.info('RDP requested for: ', address, port, type);
+      return {
+        address: address,
+        port: port
+      };
+    }
+
+    /**
+     * Requires Service object to be created:
+     *   https://github.com/kubevirt/user-guide/blob/master/workloads/virtual-machines/expose-service.md
+     */
     row.onOpenRemoteDesktop = function () {
       var ovm = row.apiObject;
-      if (_.isEmpty(ovm.services)) {// https://github.com/kubevirt/user-guide/blob/master/service.md
+      if (_.isEmpty(ovm.services)) {
         return ;
       }
-      var rdpPortFinder = function (service) {
-        return _.find(_.get(service, 'spec.ports'), function (portObj) {
-          return portObj.targetPort === RDP_PORT;
-        });
-
-      };
-      var service = _.find(ovm.services, rdpPortFinder);
-      var rdpPortObj = rdpPortFinder(service);
-      var port = _.get(rdpPortObj, "port");
-
-      if (!port) {
-        console.warn("Port is not defined: ", rdpPortObj, ovm);
-        return ;
+      var service = _.find(ovm.services, rdpPortFinder); // a service which one of the ports is RDP
+      var addressPort = getAddressPort(service, ovm);
+      if (addressPort) {
+        fileDownload(buildRdp(addressPort.address, addressPort.port));
       }
-      var externalIPs = _.get(service, 'spec.externalIPs');
-      if (_.isEmpty(externalIPs)) {
-        console.warn("externalIP is not defined for the RDP Service: ", service, ovm);
-        return ;
-      }
-
-      var externalIP = externalIPs[0];
-      fileDownload(buildRdp(externalIP, port));
     };
   }
 

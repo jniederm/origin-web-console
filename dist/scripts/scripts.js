@@ -13971,50 +13971,81 @@ return "full address:s:" + e + "\nserver port:i: " + t + "\ndesktopwidth:i:1024\
 angular.module("openshiftConsole").component("virtualMachineRow", {
 controller: [ "$scope", "$filter", "$routeParams", "APIService", "AuthorizationService", "DataService", "ListRowUtils", "Navigate", "ProjectsService", "KubevirtVersions", "moment", function(r, a, o, i, s, c, l, u, d, m, p) {
 function f() {
-var e = angular.copy(v.apiObject);
+var e = angular.copy(y.apiObject);
 return delete e._pod, delete e._vm, e;
 }
 function g(e) {
 var t = f();
 return t.spec.running = e, c.update(m.offlineVirtualMachine.resource, t.metadata.name, t, r.$parent.context);
 }
-var v = this;
-v.OfflineVirtualMachineVersion = m.offlineVirtualMachine, _.extend(v, l.ui), v.actionsDropdownVisible = function() {
-return !_.get(v.apiObject, "metadata.deletionTimestamp") && s.canI(m.offlineVirtualMachine, "delete");
-}, v.projectName = o.project, v.isOvmRunning = function() {
-return v.apiObject.spec.running;
-}, v.isOvmInRunningPhase = function() {
-return v.isOvmRunning() && v.apiObject._vm && "Running" === _.get(v.apiObject, "_pod.status.phase");
-}, v.startOvm = function() {
-g(!0);
-}, v.stopOvm = function() {
-g(!1);
-}, v.restartOvm = function() {
-return c.delete(m.virtualMachine, v.apiObject._vm.metadata.name, r.$parent.context);
-}, v.canStartOvm = function() {
-return !v.isOvmRunning();
-}, v.canStopOvm = function() {
-return v.isOvmRunning();
-}, v.canRestartOvm = function() {
-return v.isOvmInRunningPhase();
-}, v.isWindowsVM = function() {
-var e = v.apiObject, t = _.get(e, 'metadata.labels["kubevirt.io/os"]');
-return t && _.startsWith(t, "win");
-}, v.isRdpService = function() {
-var e = v.apiObject;
-return !_.isEmpty(e.services);
-}, v.onOpenRemoteDesktop = function() {
-var r = v.apiObject;
-if (!_.isEmpty(r.services)) {
-var a = function(e) {
+function v(e) {
 return _.find(_.get(e, "spec.ports"), function(e) {
 return e.targetPort === n;
 });
-}, o = _.find(r.services, a), i = a(o), s = _.get(i, "port");
-if (s) {
-var c = _.get(o, "spec.externalIPs");
-_.isEmpty(c) ? console.warn("externalIP is not defined for the RDP Service: ", o, r) : e(t(c[0], s));
-} else console.warn("Port is not defined: ", i, r);
+}
+function h(e, t) {
+var n = v(e);
+if (n) {
+var r, a = _.get(e, "spec.type"), o = _.get(n, "port");
+switch (a) {
+case "LoadBalancer":
+var i = _.get(e, "spec.externalIPs");
+if (_.isEmpty(i)) return void console.warn("externalIP is not defined for the LoadBalancer RDP Service: ", e, t);
+r = i[0];
+break;
+
+case "ClusterIP":
+var s = _.get(e, "spec.clusterIP");
+if (_.isEmpty(s)) return void console.warn("clusterIP is not defined for the ClusterIP RDP Service: ", e, t);
+r = s;
+break;
+
+case "NodePort":
+o = _.get(n, "nodePort");
+var c = _.get(t, "_pod.status.hostIP");
+if (_.isEmpty(c)) return void console.warn("nodeIP (pod.status.hostIP) is not yet known, using NodePort RDP Service: ", e, t);
+r = c;
+break;
+
+default:
+return console.error("Unrecognized Service type: ", e), null;
+}
+return console.info("RDP requested for: ", r, o, a), {
+address: r,
+port: o
+};
+}
+}
+var y = this;
+y.OfflineVirtualMachineVersion = m.offlineVirtualMachine, _.extend(y, l.ui), y.actionsDropdownVisible = function() {
+return !_.get(y.apiObject, "metadata.deletionTimestamp") && s.canI(m.offlineVirtualMachine, "delete");
+}, y.projectName = o.project, y.isOvmRunning = function() {
+return y.apiObject.spec.running;
+}, y.isOvmInRunningPhase = function() {
+return y.isOvmRunning() && y.apiObject._vm && "Running" === _.get(y.apiObject, "_pod.status.phase");
+}, y.startOvm = function() {
+g(!0);
+}, y.stopOvm = function() {
+g(!1);
+}, y.restartOvm = function() {
+return c.delete(m.virtualMachine, y.apiObject._vm.metadata.name, r.$parent.context);
+}, y.canStartOvm = function() {
+return !y.isOvmRunning();
+}, y.canStopOvm = function() {
+return y.isOvmRunning();
+}, y.canRestartOvm = function() {
+return y.isOvmInRunningPhase();
+}, y.isWindowsVM = function() {
+var e = y.apiObject, t = _.get(e, 'metadata.labels["kubevirt.io/os"]');
+return t && _.startsWith(t, "win");
+}, y.isRdpService = function() {
+var e = y.apiObject;
+return !_.isEmpty(e.services);
+}, y.onOpenRemoteDesktop = function() {
+var n = y.apiObject;
+if (!_.isEmpty(n.services)) {
+var r = h(_.find(n.services, v), n);
+r && e(t(r.address, r.port));
 }
 };
 } ],
