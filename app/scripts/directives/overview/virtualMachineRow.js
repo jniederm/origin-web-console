@@ -53,8 +53,7 @@
 
   function buildRdp(address, port) {
     return '' +
-      'full address:s:' + address +
-      '\nserver port:i: ' + port +
+      'full address:s:' + address + ':' + port +
       '\ndesktopwidth:i:0' +
       '\ndesktopheight:i:0' +
       '\nscreen mode id:i:2' + // set 2 for full screen
