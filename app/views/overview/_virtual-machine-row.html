@@ -31,20 +31,20 @@
         <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu role="menu">
           <dropdown-item
             action="row.VmActions.start(row.apiObject, row.state.context)"
-            ng-if="row.KubevirtVersions.offlineVirtualMachine | canI : 'update'"
+            ng-if="row.KubevirtVersions.virtualMachine | canI : 'update'"
             enabled="row.VmActions.canStart(row.apiObject)">Start</dropdown-item>
           <dropdown-item
             action="row.VmActions.restart(row.apiObject._vm, row.state.context)"
-            ng-if="row.KubevirtVersions.virtualMachine | canI : 'delete'"
+            ng-if="row.KubevirtVersions.virtualMachineInstance | canI : 'delete'"
             enabled="row.VmActions.canRestart(row.apiObject._vm, row.apiObject)">Restart</dropdown-item>
           <dropdown-item
             action="row.VmActions.stop(row.apiObject, row.state.context)"
-            ng-if="row.KubevirtVersions.offlineVirtualMachine | canI : 'update'"
+            ng-if="row.KubevirtVersions.virtualMachine | canI : 'update'"
             enabled="row.VmActions.canStop(row.apiObject)">Stop</dropdown-item>
-          <li ng-if="row.KubevirtVersions.offlineVirtualMachine | canI : 'update'">
+          <li ng-if="row.KubevirtVersions.virtualMachine | canI : 'update'">
             <a ng-href="{{row.apiObject | editYamlURL}}" role="button">Edit YAML</a>
           </li>
-          <li ng-if="row.KubevirtVersions.offlineVirtualMachine | canI : 'delete'">
+          <li ng-if="row.KubevirtVersions.virtualMachine | canI : 'delete'">
             <delete-link
               kind="OfflineVirtualMachine"
               group="{{row.OfflineVirtualMachineVersion.group}}"
@@ -64,7 +64,7 @@
         <span class="vm-detail-key">State:</span>
 
         <vm-state state="row.apiObject._vm | vmStateText : row.apiObject" ></vm-state>
-        <vm-actions-line vm="row.apiObject._vm" ovm="row.apiObject" context="row.state.context"></vm-actions-line>
+        <vm-actions-line vmi="row.apiObject._vm" ovm="row.apiObject" context="row.state.context"></vm-actions-line>
       </div>
 
       <div class="word-break">

@@ -4,9 +4,9 @@
       <breadcrumbs breadcrumbs="breadcrumbs"></breadcrumbs>
       <alerts alerts="alerts"></alerts>
       <div ng-if="!loaded()" class="mar-top-xl">Loading...</div>
-      <div ng-if="loaded() && vm">
+      <div ng-if="loaded() && ovm">
         <h1 class="contains-actions">
-          <div class="pull-right dropdown" ng-show="'virtualMachines' | canIDoAny">
+          <div class="pull-right dropdown" ng-show="(vmi && 'virtualMachines' | canIDoAny) || (ovm && 'offlineVirtualMachines' | canIDoAny)">
             <button type="button" class="dropdown-toggle actions-dropdown-btn btn btn-default hidden-xs" data-toggle="dropdown">
               Actions
               <span class="caret"></span>
@@ -15,34 +15,48 @@
                class="dropdown-toggle actions-dropdown-kebab visible-xs-inline"
                data-toggle="dropdown"><i class="fa fa-ellipsis-v"></i><span class="sr-only">Actions</span></a>
             <ul class="dropdown-menu dropdown-menu-right actions action-button">
+              <dropdown-item
+                action="VmActions.start(ovm, projectContext)"
+                ng-if="KubevirtVersions.virtualMachine | canI : 'update'"
+                enabled="VmActions.canStart(ovm)">Start</dropdown-item>
+              <dropdown-item
+                action="VmActions.restart(vm, projectContext)"
+                ng-if="KubevirtVersions.virtualMachineInstance | canI : 'delete'"
+                enabled="VmAction.canRestart(vm, ovm)">Restart</dropdown-item>
+              <dropdown-item
+                action="VmActions.stop(ovm, projectContext)"
+                ng-if="KubevirtVersions.virtualMachine | canI : 'update'"
+                enabled="VmActions.canStop(ovm)">Stop</dropdown-item>
               <li ng-if="KubevirtVersions.virtualMachine | canI : 'update'">
-                <a ng-href="{{vm | editYamlURL}}" role="button">Edit YAML</a>
+                <a ng-href="{{ovm | editYamlURL}}" role="button">Edit YAML</a>
               </li>
               <li ng-if="KubevirtVersions.virtualMachine | canI : 'delete'">
                 <delete-link
-                  kind="VirtualMachine"
+                  kind="{{KubevirtVersions.virtualMachine.kind}}"
                   group="{{KubevirtVersions.virtualMachine.group}}"
-                  resource-name="{{vm.metadata.name}}"
-                  project-name="{{vm.metadata.namespace}}"
+                  resource-name="{{ovm.metadata.name}}"
+                  project-name="{{ovm.metadata.namespace}}"
+                  stay-on-current-page="true"
                   alerts="alerts">
                 </delete-link>
               </li>
             </ul>
           </div>
-          {{vm.metadata.name}}
-          <small class="meta">created <span am-time-ago="vm.metadata.creationTimestamp"></span></small>
+          {{ovm.metadata.name}}
+          <small class="meta">created <span am-time-ago="ovm.metadata.creationTimestamp"></span></small>
         </h1>
-        <labels labels="vm.metadata.labels"
+
+        <labels labels="ovm.metadata.labels"
                 clickable="true" kind="virtual-machines"
-                title-kind="Virtual machines"
-                project-name="{{vm.metadata.namespace}}"
+                title-kind="Offline virtual machine"
+                project-name="{{ovm.metadata.namespace}}"
                 limit="3"></labels>
       </div>
     </div>
   </div><!-- /middle-header-->
   <div class="middle-content" persist-tab-state>
     <div class="container-fluid">
-      <div class="row" ng-if="vm">
+      <div class="row" ng-if="ovm">
         <div class="col-md-12">
           <uib-tabset>
             <uib-tab heading="Details" active="selectedTab.details">
@@ -56,21 +70,22 @@
                     <dl class="dl-horizontal left">
                       <dt>State:</dt>
                       <dd>
-                        <vm-state state="vm.status.phase" />
+                        <vm-state state="vmi | vmStateText : vm" />
+                        <vm-actions-line vmi="vmi" vm="vm" context="projectContext"></vm-actions-line>
                         <span ng-if="vm.metadata.deletionTimestamp">(expires {{vm.metadata.deletionTimestamp | date : 'medium'}})</span>
                       </dd>
                       <dt>Uptime:</dt>
                       <dd>
-                        {{pods[0] | vmPodUptime}}
+                        {{pods[0] | vmPodUptime | orDashes}}
                       </dd>
                       <dt>Node:</dt>
                       <dd>
-                        {{vm.metadata.labels['kubevirt.io/nodeName'] || '--'}}
+                        {{vmi.metadata.labels['kubevirt.io/nodeName'] | orDashes}}
                       </dd>
-                      <dt>Offline virtual machine:</dt>
+                      <dt>Virtual machine:</dt>
                       <dd>
-                        <a ng-if="ovm" ng-href="{{ovm | navigateResourceURL}}">{{ovm.metadata.name}}</a>
-                        <span ng-if="!ovm">--</span>
+                        <a ng-if="vmi" ng-href="{{vmi | navigateResourceURL}}">{{vmi.metadata.name}}</a>
+                        <span ng-if="!vmi">--</span>
                       </dd>
                       <dt>Pod:</dt>
                       <dd>
@@ -90,11 +105,11 @@
                     <dl class="dl-horizontal left">
                       <dt>Memory:</dt>
                       <dd>
-                        {{vm | vmMemory | orDashes}}
+                        {{ovm.spec.template | vmMemory | orDashes}}
                       </dd>
                       <dt>Operating system:</dt>
                       <dd>
-                        {{vm | vmOs | orDashes}}
+                        {{ovm.spec.template | vmOs | orDashes}}
                       </dd>
                     </dl>
                   </div>
@@ -104,7 +119,7 @@
 
             <uib-tab active="selectedTab.events" ng-if="eventsVersion | canI : 'watch'">
               <uib-tab-heading>Events</uib-tab-heading>
-              <events api-objects="[ vm ]" project-context="projectContext" ng-if="selectedTab.events"></events>
+              <events api-objects="[ ovm ]" project-context="projectContext" ng-if="selectedTab.events"></events>
             </uib-tab>
           </uib-tabset>
         </div><!-- /col-* -->

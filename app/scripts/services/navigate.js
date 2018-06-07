@@ -261,12 +261,12 @@ angular.module("openshiftConsole")
             url.segment(APIService.kindToResource(kind))
               .segmentCoded(name);
             break;
-          case "VirtualMachine":
-            url.segment('virtual-machines')
+          case "VirtualMachine": // TODO change
+            url.segment('virtual-machine-instances')
               .segmentCoded(name);
             break;
-          case "OfflineVirtualMachine":
-            url.segment('offline-virtual-machines')
+          case "OfflineVirtualMachine": // TODO change
+            url.segment('virtual-machines')
               .segmentCoded(name);
             break;
           default:
@@ -348,7 +348,6 @@ angular.module("openshiftConsole")
           'deploymentconfigs': 'deployments',
           'imagestreams': 'images',
           'pods': 'pods',
-          'offlinevirtualmachines': 'offline-virtual-machines',
           'replicasets': 'deployments',
           'replicationcontrollers': 'deployments',
           'routes': 'routes',
@@ -357,7 +356,7 @@ angular.module("openshiftConsole")
           'serviceinstances': 'service-instances',
           'persistentvolumeclaims': 'storage',
           'statefulsets' : 'stateful-sets',
-          'virtualmachines': 'virtual-machines',
+          'offlinevirtualmachines': 'virtual-machines', // TODO change after rename; it maps [entity plural name] -> [list url segment]
         };
 
         return URI.expand("project/{projectName}/browse/{browsePath}", {

@@ -4,6 +4,11 @@
       <div class="page-header page-header-bleed-right page-header-bleed-left">
         <h1>
           Virtual Machines
+          <span class="page-header-link">
+            <a ng-href="http://kubevirt.io/user-guide/#/workloads/virtual-machines/README" target="_blank">
+              Learn More <i class="fa fa-external-link" aria-hidden="true"></i>
+            </a>
+          </span>
         </h1>
       </div>
       <div ng-if="mergedVms.length || filterWithZeroResults" class="data-toolbar">
@@ -35,24 +40,20 @@
             <thead>
             <tr>
               <th>Name</th>
-              <th>State</th>
-              <th>Uptime</th>
-              <th>OVM</th>
+              <th>Status</th>
+              <th>Age</th>
             </tr>
             </thead>
             <tbody>
               <tr ng-repeat="mergedVm in mergedVms track by mergedVm.vm.metadata.uid" class="animate-repeat">
                 <td>
-                  <a href="{{mergedVm.vm.metadata.name | navigateResourceURL : 'VirtualMachine' : mergedVm.vm.metadata.namespace}}">{{mergedVm.vm.metadata.name}}</a>
+                  <a href="{{mergedVm.vm | navigateResourceURL}}">{{mergedVm.vm.metadata.name}}</a>
                 </td>
                 <td>
-                  <vm-state state="mergedVm.vm.status.phase"/>
+                  <vm-state state="mergedVm.vmi | vmStateText : mergedVm.vm"/>
                 </td>
                 <td>
-                  <span>{{mergedVm.pod | vmPodUptime}}</span>
-                </td>
-                <td>
-                  <a ng-if="mergedVm.ovm" href="{{mergedVm.ovm | navigateResourceURL : 'OfflineVirtualMachine'}}">{{mergedVm.ovm.metadata.name}}</a>
+                  <span am-time-ago="mergedVm.ovm.metadata.creationTimestamp || mergedVm.vm.metadata.creationTimestamp" am-without-suffix="true"></span>
                 </td>
               </tr>
             </tbody>

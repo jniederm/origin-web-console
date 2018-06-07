@@ -68,7 +68,7 @@
       var startedOvm = createOvmCopy();
       startedOvm.spec.running = running;
       return DataService.update(
-        KubevirtVersions.offlineVirtualMachine.resource,
+        KubevirtVersions.virtualMachine.resource,
         startedOvm.metadata.name,
         startedOvm,
         $scope.$parent.context
@@ -91,7 +91,7 @@
     };
     row.restartOvm = function () {
       return DataService.delete(
-        KubevirtVersions.virtualMachine,
+        KubevirtVersions.virtualMachineInstance,
         row.apiObject._vm.metadata.name,
         $scope.$parent.context
       );
@@ -137,18 +137,5 @@
       }
       return moment(startTime).fromNow(true);
     };
-  });
-
-  angular.module('openshiftConsole').constant('KubevirtVersions', {
-    offlineVirtualMachine: {
-      resource: "offlinevirtualmachines",
-      group: "kubevirt.io",
-      version: "v1alpha1"
-    },
-    virtualMachine: {
-      resource: "virtualmachines",
-      group: "kubevirt.io",
-      version: "v1alpha1"
-    }
   });
 })();

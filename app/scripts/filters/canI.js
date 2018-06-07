@@ -67,10 +67,10 @@ angular
         {group: 'apps', resource: 'statefulsets', verbs: ['update', 'delete']}
       ],
       'virtualMachines': [
-        {group: KubevirtVersions.virtualMachine.group, resource: KubevirtVersions.virtualMachine.resource, verbs: ['update', 'delete']}
+        {group: KubevirtVersions.virtualMachineInstance.group, resource: KubevirtVersions.virtualMachineInstance.resource, verbs: ['update', 'delete']}
       ],
       'offlineVirtualMachines': [
-        {group: KubevirtVersions.offlineVirtualMachine.group, resource: KubevirtVersions.offlineVirtualMachine.resource, verbs: ['update', 'delete']}
+        {group: KubevirtVersions.virtualMachine.group, resource: KubevirtVersions.virtualMachine.resource, verbs: ['update', 'delete']}
       ]
     };
 

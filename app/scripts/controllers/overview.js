@@ -1527,7 +1527,7 @@ function OverviewController($scope,
         updateFilter();
       };
       watches.push(DataService.watch(
-        KubevirtVersions.offlineVirtualMachine,
+        KubevirtVersions.virtualMachine,
         context,
         ovmCallback,
         { poll: limitWatches, pollInterval: DEFAULT_POLL_INTERVAL }));
@@ -1537,7 +1537,7 @@ function OverviewController($scope,
         updateFilter();
       };
       watches.push(DataService.watch(
-        KubevirtVersions.virtualMachine,
+        KubevirtVersions.virtualMachineInstance,
         context,
         vmCallback,
         { poll: limitWatches, pollInterval: DEFAULT_POLL_INTERVAL }));

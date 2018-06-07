@@ -11,7 +11,7 @@ angular.module('openshiftConsole')
     'LabelFilter',
     'Logger',
     'KubevirtVersions',
-    'getOvmReferenceId',
+    'getVmReferenceId',
     function (
     $filter,
     $routeParams,
@@ -22,13 +22,12 @@ angular.module('openshiftConsole')
     LabelFilter,
     Logger,
     KubevirtVersions,
-    getOvmReferenceId
+    getVmReferenceId
     ) {
     $scope.projectName = $routeParams.project;
-    $scope.unfilteredVms = {};   // {{ [vmName: string]: Vm }}
-    $scope.unfilteredOvms = {};  // {{ [vmName: string]: Ovm }}
-    $scope.unfilteredPods = {};  // {{ [podName: string]: Pod }}
-    $scope.mergedVms = {};       // {{ [vmName: string]: { vm: Vm, ovm?: Ovm, pod?: Pod } }}
+    $scope.unfilteredVmis = {};   // {{ [vmName: string]: Vmi }}
+    $scope.unfilteredVms = {};  // {{ [vmName: string]: Vm }}
+    $scope.mergedVms = {};       // {{ [vmName: string]: { vmi?: Vmi, vm: Vm } }}
     $scope.labelSuggestions = {};
     $scope.clearFilter = function() {
       LabelFilter.clear();
@@ -41,21 +40,15 @@ angular.module('openshiftConsole')
       .then(_.spread(function(project, context) {
         $scope.project = project;
 
+        watches.push(DataService.watch(KubevirtVersions.virtualMachineInstance, context, function(vmis) {
+          $scope.vmisLoaded = true;
+          $scope.unfilteredVmis = vmis.by('metadata.name');
+          updateMergedVms();
+        }));
+
         watches.push(DataService.watch(KubevirtVersions.virtualMachine, context, function(vms) {
           $scope.vmsLoaded = true;
-          $scope.unfilteredVms = vms.by("metadata.name");
-          updateMergedVms();
-        }));
-
-        watches.push(DataService.watch(KubevirtVersions.offlineVirtualMachine, context, function(ovms) {
-          $scope.ovmsLoaded = true;
-          $scope.unfilteredOvms = ovms.by("metadata.name");
-          updateMergedVms();
-        }));
-
-        watches.push(DataService.watch(APIService.getPreferredVersion('pods'), context, function(pods) {
-          $scope.podsLoaded = true;
-          $scope.unfilteredPods = pods.by("metadata.name");
+          $scope.unfilteredVms = vms.by('metadata.name');
           updateMergedVms();
         }));
 
@@ -77,45 +70,32 @@ angular.module('openshiftConsole')
         }
 
         function updateMergedVms() {
-          $scope.unfilteredMergedVms = mergeOvmsAndVms($scope.unfilteredOvms, $scope.unfilteredVms, $scope.unfilteredPods);
+          $scope.unfilteredMergedVms = mergeVmsAndVmis($scope.unfilteredVms, $scope.unfilteredVmis);
           LabelFilter.addLabelSuggestionsFromResources($scope.unfilteredVms, $scope.labelSuggestions);
           LabelFilter.setLabelSuggestions($scope.labelSuggestions);
           filterVms();
         }
 
         /**
-         * It returns all vms optionally enhanced by ovm reference.
-         * @param {{ [vmName: string]: Ovm }} ovms
          * @param {{ [vmName: string]: Vm }} vms
-         * @param {{ [podName: string]: Pod }} pods
-         * @return {{ [vmName: string]: { vm: Vm, ovm?: Ovm } }}
+         * @param {{ [vmName: string]: Vmi }} vmis
+         * @return {{ [vmName: string]: { vm?: Vm, ovm?: Ovm } }}
          */
-        function mergeOvmsAndVms(ovms, vms, pods) {
-          var ovmIdToOvm = _.keyBy(ovms, 'metadata.uid');
-          var vmNameToPod = _(pods)
-            .filter(function (pod) {
-              return _.get(pod, 'metadata.labels["kubevirt.io"]') && _.get(pod, 'metadata.labels["kubevirt.io/domain"]');
-            })
-            .keyBy('metadata.labels["kubevirt.io/domain"]')
-            .value();
-          var vmsArray = _.map(vms, function (vm) {
-            var ovmId = getOvmReferenceId(vm);
-            var ovm = ovmId && ovmIdToOvm[ovmId];
-            var pod = vmNameToPod[vm.metadata.name];
+        function mergeVmsAndVmis(vms, vmis) {
+          var vmIdToVmi = _.keyBy(vmis, getVmReferenceId);
+          var mergedVms = _.map(vms, function (vm) {
+            var vmi = vmIdToVmi[vm.metadata.uid];
             var mergedVm = { vm: vm };
-            if (ovm) {
-              mergedVm.ovm = ovm;
-            }
-            if (pod) {
-              mergedVm.pod = pod;
+            if (vmi) {
+              mergedVm.vmi = vmi;
             }
             return mergedVm;
           });
-          return _.keyBy(vmsArray, 'vm.metadata.name');
+          return _.keyBy(mergedVms, 'vm.metadata.name');
         }
 
         $scope.allVmsLoaded = function () {
-          return $scope.vmsLoaded && $scope.ovmsLoaded && $scope.podsLoaded;
+          return $scope.vmisLoaded && $scope.vmsLoaded;
         };
 
         $scope.$on('$destroy', function(){
@@ -125,13 +105,30 @@ angular.module('openshiftConsole')
   }]);
 
 angular.module('openshiftConsole')
-  .constant('getOvmReferenceId', function (vm) {
-    var references = _.get(vm, 'metadata.ownerReferences');
+  .constant('getVmReferenceId', function (vmi) {
+    var references = _.get(vmi, 'metadata.ownerReferences');
     if (references === undefined) {
       return undefined;
     }
     return _(references)
-      .filter({ kind: 'OfflineVirtualMachine' })
+      .filter({ kind: 'OfflineVirtualMachine' }) // TODO rename to VirtualMachine
       .first()
       .uid;
   });
+
+angular.module('openshiftConsole').constant('KubevirtVersions', {
+  // TODO when renaming please also adjust navigate.js#resourceURL method
+  // TODO remove and add vmi
+  virtualMachine: {
+    resource: 'offlinevirtualmachines',
+    group: 'kubevirt.io',
+    version: 'v1alpha1',
+    kind: 'OfflineVirtualMachine'
+  },
+  virtualMachineInstance: {
+    resource: 'virtualmachines',
+    group: 'kubevirt.io',
+    version: 'v1alpha1',
+    kind: 'VirtualMachine'
+  }
+});
