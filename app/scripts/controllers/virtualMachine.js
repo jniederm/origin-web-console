@@ -8,7 +8,8 @@ angular.module('openshiftConsole')
                                          DataService,
                                          ProjectsService,
                                          KubevirtVersions,
-                                         VmActions) {
+                                         VmActions,
+                                         MetricsService) {
     $scope.projectName = $routeParams.project;
     $scope.alerts = {};
     $scope.logOptions = {};
@@ -25,11 +26,11 @@ angular.module('openshiftConsole')
     // Must always be initialized so we can watch selectedTab
     $scope.selectedTab = {};
     $scope.vmi = undefined;
-    $scope.ovm = undefined;
+    $scope.vm = undefined;
     $scope.pods = []; // sorted by creation time, the most recent first
 
     $scope.loaded = function () {
-      return $scope.vmLoaded && $scope.ovmLoaded && $scope.podsLoaded;
+      return $scope.vmiLoaded && $scope.vmLoaded && $scope.podsLoaded;
     };
 
     $scope.podsVersion = APIService.getPreferredVersion('pods');
@@ -37,9 +38,14 @@ angular.module('openshiftConsole')
     $scope.KubevirtVersions = KubevirtVersions;
     $scope.VmActions = VmActions;
 
+    // Check if the metrics service is available so we know when to show the tab.
+    MetricsService.isAvailable().then(function(available) {
+      $scope.metricsAvailable = available;
+    });
+
     var watches = [];
     var requestContext = null;
-    var ovmLoadingError;
+    var vmLoadingError;
     var allPods = {}; // {[podName: string]: Pod}
 
     ProjectsService
@@ -51,31 +57,31 @@ angular.module('openshiftConsole')
 
         DataService
           .get(KubevirtVersions.virtualMachineInstance, $routeParams.vm, context, { errorNotification: false })
-          .then(function (vm) {
-            $scope.vmi = vm;
-            $scope.vmLoaded = true;
+          .then(function (vmi) {
+            $scope.vmi = vmi;
+            $scope.vmiLoaded = true;
           }, function () {
-            $scope.vmLoaded = true;
+            $scope.vmiLoaded = true;
           });
 
         DataService
           .get(KubevirtVersions.virtualMachine, $routeParams.vm, context, { errorNotification: false })
-          .then(function (ovm) {
-            $scope.ovm = ovm;
-            $scope.ovmLoaded = true;
+          .then(function (vm) {
+            $scope.vm = vm;
+            $scope.vmLoaded = true;
           }, function (error) {
-            $scope.ovmLoaded = true;
-            ovmLoadingError = error;
+            $scope.vmLoaded = true;
+            vmLoadingError = error;
             updateLoadingAlert();
           });
 
-        watches.push(DataService.watchObject(KubevirtVersions.virtualMachineInstance, $routeParams.vm, context, function(vm, action) {
-          $scope.vmi = action === 'DELETED' ? undefined : vm;
+        watches.push(DataService.watchObject(KubevirtVersions.virtualMachineInstance, $routeParams.vm, context, function(vmi, action) {
+          $scope.vmi = action === 'DELETED' ? undefined : vmi;
         }));
 
-        watches.push(DataService.watchObject(KubevirtVersions.virtualMachine, $routeParams.vm, context, function(ovm, action) {
-          $scope.ovm = action === 'DELETED' ? undefined : ovm;
-          ovmLoadingError = undefined;
+        watches.push(DataService.watchObject(KubevirtVersions.virtualMachine, $routeParams.vm, context, function(vm, action) {
+          $scope.vm = action === 'DELETED' ? undefined : vm;
+          vmLoadingError = undefined;
           updateLoadingAlert();
         }));
 
@@ -86,14 +92,14 @@ angular.module('openshiftConsole')
         }));
 
         function updatePods() {
-          if (!$scope.vm) {
+          if (!$scope.vmi) {
             $scope.pods = [];
             return;
           }
           $scope.pods = _(allPods)
             .filter(function (pod) {
               return _.get(pod, 'metadata.labels["kubevirt.io"]') === 'virt-launcher' &&
-                _.get(pod, 'metadata.labels["kubevirt.io/domain"]') === $scope.vm.metadata.name;
+                _.get(pod, 'metadata.labels["kubevirt.io/domain"]') === $scope.vmi.metadata.name;
             })
             .sortBy(function (pod) {
               return new Date(pod.metadata.creationTimestamp);
@@ -102,19 +108,19 @@ angular.module('openshiftConsole')
         }
 
         function updateLoadingAlert() {
-          if (ovmLoadingError) {
+          if (vmLoadingError) {
             $scope.alerts.load = {
               type: 'error',
-              message: 'The offline virtual machine detail could not be loaded.',
-              details: $filter('getErrorDetails')(ovmLoadingError)
+              message: 'The virtual machine detail could not be loaded.',
+              details: $filter('getErrorDetails')(vmLoadingError)
             };
           } else {
             delete $scope.alerts.load;
           }
-          if (!$scope.ovm && !ovmLoadingError) {
+          if (!$scope.vm && !vmLoadingError) {
             $scope.alerts.deleted = {
               type: 'warning',
-              message: 'The offline virtual machine ' + $routeParams.vm + ' has been deleted.'
+              message: 'The virtual machine ' + $routeParams.vm + ' has been deleted.'
             };
           } else {
             delete $scope.alerts.deleted;

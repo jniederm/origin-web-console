@@ -28,7 +28,7 @@ angular.module('openshiftConsole')
     $scope.ovm = undefined;
     $scope.pods = []; // sorted by creation time, the most recent first
     $scope.loaded = function () {
-      return $scope.vmLoaded && $scope.ovmLoaded && $scope.podsLoaded;
+      return $scope.vmiLoaded && $scope.vmLoaded && $scope.podsLoaded;
     };
 
     $scope.podsVersion = APIService.getPreferredVersion('pods');
@@ -70,10 +70,10 @@ angular.module('openshiftConsole')
           .get(KubevirtVersions.virtualMachineInstance, $routeParams.vm, context, { errorNotification: false })
           .then(function (vm) {
             $scope.vmi = vm;
-            $scope.vmLoaded = true;
+            $scope.vmiLoaded = true;
             updatePods();
           }, function (error) {
-            $scope.vmLoaded = true;
+            $scope.vmiLoaded = true;
             vmLoadingError = error;
             updateLoadingAlert();
           });
@@ -82,9 +82,9 @@ angular.module('openshiftConsole')
           .get(KubevirtVersions.virtualMachine, $routeParams.vm, context, { errorNotification: false })
           .then(function (ovm) {
             $scope.ovm = ovm;
-            $scope.ovmLoaded = true;
+            $scope.vmLoaded = true;
           }, function () {
-            $scope.ovmLoaded = true;
+            $scope.vmLoaded = true;
           });
 
         watches.push(DataService.watchObject(KubevirtVersions.virtualMachineInstance, $routeParams.vm, context, function(vm, action) {
@@ -140,7 +140,7 @@ angular.module('openshiftConsole')
   });
 
 angular.module('openshiftConsole')
-  .factory('VmActions', [
+  .factory('VmActions', [ // TODO rename
     'DataService',
     'KubevirtVersions',
     function (DataService, KubevirtVersions) {
@@ -173,8 +173,8 @@ angular.module('openshiftConsole')
       canStart: function (ovm) {
         return ovm && _.get(ovm, 'spec.running') !== true;
       },
-      canRestart: function (vm, ovm) {
-        return vm && ovm;
+      canRestart: function (vmi, vm) {
+        return vmi && vm;
       },
       canStop: function (ovm) {
         return _.get(ovm, 'spec.running') === true;

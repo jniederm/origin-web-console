@@ -125,6 +125,7 @@
     };
   }
 
+  // TODO delete
   angular.module('openshiftConsole').filter('vmPodUptime', function () {
     return function (pod) {
       var computeContainerStartTime = _(_.get(pod, 'status.containerStatuses'))
