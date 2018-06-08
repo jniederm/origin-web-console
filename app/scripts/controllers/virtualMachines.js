@@ -117,8 +117,7 @@ angular.module('openshiftConsole')
   });
 
 angular.module('openshiftConsole').constant('KubevirtVersions', {
-  // TODO when renaming please also adjust navigate.js#resourceURL method
-  // TODO remove and add vmi
+  // TODO remove ovm and add vmi
   virtualMachine: {
     resource: 'offlinevirtualmachines',
     group: 'kubevirt.io',

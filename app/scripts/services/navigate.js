@@ -7,7 +7,8 @@ angular.module("openshiftConsole")
                                 annotationFilter,
                                 LabelFilter,
                                 $filter,
-                                APIService){
+                                APIService,
+                                KubevirtVersions){
     var annotation = $filter('annotation');
     var buildConfigForBuild = $filter('buildConfigForBuild');
     var isPipeline = $filter('isJenkinsPipelineStrategy');
@@ -261,11 +262,11 @@ angular.module("openshiftConsole")
             url.segment(APIService.kindToResource(kind))
               .segmentCoded(name);
             break;
-          case "VirtualMachine": // TODO change
+          case KubevirtVersions.virtualMachineInstance.kind:
             url.segment('virtual-machine-instances')
               .segmentCoded(name);
             break;
-          case "OfflineVirtualMachine": // TODO change
+          case KubevirtVersions.virtualMachine.kind:
             url.segment('virtual-machines')
               .segmentCoded(name);
             break;
@@ -356,7 +357,7 @@ angular.module("openshiftConsole")
           'serviceinstances': 'service-instances',
           'persistentvolumeclaims': 'storage',
           'statefulsets' : 'stateful-sets',
-          'offlinevirtualmachines': 'virtual-machines', // TODO change after rename; it maps [entity plural name] -> [list url segment]
+          [KubevirtVersions.virtualMachine.resource]: 'virtual-machines',
         };
 
         return URI.expand("project/{projectName}/browse/{browsePath}", {

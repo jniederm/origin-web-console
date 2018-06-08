@@ -36,7 +36,6 @@
                   group="{{KubevirtVersions.virtualMachine.group}}"
                   resource-name="{{vm.metadata.name}}"
                   project-name="{{vm.metadata.namespace}}"
-                  stay-on-current-page="true"
                   alerts="alerts">
                 </delete-link>
               </li>
@@ -75,8 +74,10 @@
                       </dd>
                       <dt>Virtual machine instance:</dt>
                       <dd>
-                        <vm-state-icon state="vmi | vmStateText : vm" ng-if="vmi"/>
-                        <a ng-if="vmi" ng-href="{{vmi | navigateResourceURL}}">{{vmi.metadata.name}}</a>
+                        <span ng-if="vmi">
+                          <a ng-href="{{vmi | navigateResourceURL}}">{{vmi.metadata.name}}</a>
+                          <span class="small text-muted">(<vm-state state="vmi | vmStateText"></vm-state>)</span>
+                        </span>
                         <span ng-if="!vmi">--</span>
                       </dd>
                       <dt>Pod:</dt>
@@ -103,9 +104,13 @@
                       <dd>
                         {{vm.spec.template | vmMemory | orDashes}}
                       </dd>
+                      <dt>CPU:</dt>
+                      <dd>
+                        {{vm.spec.template | vmCpu | orDashes}}
+                      </dd>
                       <dt>Operating system:</dt>
                       <dd>
-                        {{vm.spec.template | vmOs | orDashes}}
+                        {{vm.spec.template | vmOs | humanizeOs | orDashes}}
                       </dd>
                     </dl>
                   </div>

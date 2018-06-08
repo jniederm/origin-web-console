@@ -11,7 +11,8 @@ angular.module('openshiftConsole')
     $filter,
     LabelFilter,
     Logger,
-    APIService) {
+    APIService,
+    KubevirtVersions) {
     $scope.projectName = $routeParams.project;
     $scope.labelSuggestions = {};
     $scope.kindSelector = {disabled: true};
@@ -40,7 +41,7 @@ angular.module('openshiftConsole')
         case "Service":
         case "ServiceInstance":
         case "StatefulSet":
-        case "VirtualMachine":
+        case KubevirtVersions.virtualMachine.kind:
           return false;
         default:
           return true;

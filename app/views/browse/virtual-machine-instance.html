@@ -20,21 +20,20 @@
               </li>
               <li ng-if="KubevirtVersions.virtualMachineInstance | canI : 'delete'">
                 <delete-link
-                  kind="VirtualMachine"
+                  kind="{{KubevirtVersions.virtualMachineInstance.kind}}"
                   group="{{KubevirtVersions.virtualMachineInstance.group}}"
                   resource-name="{{vmi.metadata.name}}"
                   project-name="{{vmi.metadata.namespace}}"
-                  redirectUrl=""
+                  redirect-url="{{vm ? (vm | navigateResourceURL) : (Navigate.resourceListURL(KubevirtVersions.virtualMachine.resource, vmi.metadata.namespace))}}"
                   alerts="alerts">
-                  <!-- TODO finish redirectUrl -->
                 </delete-link>
               </li>
             </ul>
           </div>
           {{vmi.metadata.name}}
-          <small class="meta">created <span am-time-ago="vm.metadata.creationTimestamp"></span></small>
+          <small class="meta">created {{vmi.metadata.creationTimestamp | amTimeAgo}}</span></small>
         </h1>
-        <labels labels="vm.metadata.labels"
+        <labels labels="vmi.metadata.labels"
                 clickable="true" kind="virtual-machines"
                 title-kind="Virtual machines"
                 project-name="{{vmi.metadata.namespace}}"
@@ -58,12 +57,8 @@
                     <dl class="dl-horizontal left">
                       <dt>State:</dt>
                       <dd>
-                        <vm-state state="vm.status.phase" />
+                        <vm-state state="vmi.status.phase" />
                         <span ng-if="vmi.metadata.deletionTimestamp">(expires {{vmi.metadata.deletionTimestamp | date : 'medium'}})</span>
-                      </dd>
-                      <dt>Uptime:</dt>
-                      <dd>
-                        {{pods[0] | vmPodUptime}}
                       </dd>
                       <dt>Node:</dt>
                       <dd>
@@ -71,8 +66,8 @@
                       </dd>
                       <dt>Offline virtual machine:</dt>
                       <dd>
-                        <a ng-if="ovm" ng-href="{{ovm | navigateResourceURL}}">{{ovm.metadata.name}}</a>
-                        <span ng-if="!ovm">--</span>
+                        <a ng-if="vm" ng-href="{{vm | navigateResourceURL}}">{{vm.metadata.name}}</a>
+                        <span ng-if="!vm">--</span>
                       </dd>
                       <dt>Pod:</dt>
                       <dd>
@@ -92,11 +87,15 @@
                     <dl class="dl-horizontal left">
                       <dt>Memory:</dt>
                       <dd>
-                        {{vmi | vmMemory | orDashes}}
+                        {{vmi | vmMemory | orDefault}}
+                      </dd>
+                      <dt>CPU:</dt>
+                      <dd>
+                        {{vmi | vmCpu | orDefault}}
                       </dd>
                       <dt>Operating system:</dt>
                       <dd>
-                        {{vmi | vmOs | orDashes}}
+                        {{vmi | vmOs | humanizeOs | orDashes}}
                       </dd>
                     </dl>
                   </div>
@@ -104,9 +103,19 @@
               </div>
             </uib-tab>
 
+            <uib-tab ng-if="metricsAvailable" heading="Metrics" active="selectedTab.metrics">
+              <!-- Use ng-if to remove the metrics directive when the tab is not active so
+                   we don't update in the background. -->
+              <pod-metrics
+                ng-if="selectedTab.metrics"
+                pod="pods[0]"
+                alerts="alerts">
+              </pod-metrics>
+            </uib-tab>
+
             <uib-tab active="selectedTab.events" ng-if="eventsVersion | canI : 'watch'">
               <uib-tab-heading>Events</uib-tab-heading>
-              <events api-objects="[ vm ]" project-context="projectContext" ng-if="selectedTab.events"></events>
+              <events api-objects="[ vmi ]" project-context="projectContext" ng-if="selectedTab.events"></events>
             </uib-tab>
           </uib-tabset>
         </div><!-- /col-* -->

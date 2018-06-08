@@ -6,6 +6,7 @@ angular.module('openshiftConsole')
                                          $scope,
                                          APIService,
                                          DataService,
+                                         Navigate,
                                          ProjectsService,
                                          KubevirtVersions,
                                          VmActions,
@@ -15,8 +16,8 @@ angular.module('openshiftConsole')
     $scope.logOptions = {};
     $scope.breadcrumbs = [
       {
-        title: "Virtual Machines",
-        link: "project/" + $routeParams.project + "/browse/virtual-machines"
+        title: 'Virtual Machines',
+        link: Navigate.resourceListURL(KubevirtVersions.virtualMachine.resource, $routeParams.project)
       },
       {
         title: $routeParams.vm
