@@ -10,7 +10,8 @@ angular.module('openshiftConsole')
                                          ProjectsService,
                                          KubevirtVersions,
                                          VmActions,
-                                         MetricsService) {
+                                         MetricsService,
+                                         filterVmiPods) {
     $scope.projectName = $routeParams.project;
     $scope.alerts = {};
     $scope.logOptions = {};
@@ -97,15 +98,7 @@ angular.module('openshiftConsole')
             $scope.pods = [];
             return;
           }
-          $scope.pods = _(allPods)
-            .filter(function (pod) {
-              return _.get(pod, 'metadata.labels["kubevirt.io"]') === 'virt-launcher' &&
-                _.get(pod, 'metadata.labels["kubevirt.io/domain"]') === $scope.vmi.metadata.name;
-            })
-            .sortBy(function (pod) {
-              return new Date(pod.metadata.creationTimestamp);
-            })
-            .value();
+          $scope.pods = filterVmiPods(allPods, $scope.vmi.metadata.name);
         }
 
         function updateLoadingAlert() {

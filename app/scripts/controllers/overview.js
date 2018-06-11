@@ -209,7 +209,7 @@ function OverviewController($scope,
            _.size(overview.monopods) +
            _.size(overview.state.serviceInstances) +
            _.size(overview.mobileClients) +
-           _.size(overview.offlineVirtualMachines);
+           _.size(overview.virtualMachines);
   };
 
   // The size of all visible top-level items after filtering.
@@ -223,7 +223,7 @@ function OverviewController($scope,
            _.size(overview.filteredMonopods) +
            _.size(overview.filteredServiceInstances) +
            _.size(overview.filteredMobileClients) +
-           _.size(overview.filteredOfflineVirtualMachines);
+           _.size(overview.filteredVirtualMachines);
   };
 
   // Show the "Get Started" message if the project is empty.
@@ -411,7 +411,7 @@ function OverviewController($scope,
     overview.filteredPipelineBuildConfigs = filterItems(overview.pipelineBuildConfigs);
     overview.filteredServiceInstances = filterItems(state.orderedServiceInstances);
     overview.filteredMobileClients = filterItems(overview.mobileClients);
-    overview.filteredOfflineVirtualMachines = filterItems(overview.offlineVirtualMachines);
+    overview.filteredVirtualMachines = filterItems(overview.virtualMachines);
     overview.filterActive = isFilterActive();
     updateApps();
     updateShowGetStarted();
@@ -709,7 +709,7 @@ function OverviewController($scope,
   }
 
   function updateVirtualMachineMapping() {
-    if (!overview.offlineVirtualMachines || !overview.virtualMachines || !overview.pods) {
+    if (!overview.virtualMachines || !overview.virtualMachineInstances || !overview.pods) {
       return;
     }
     var vmIdToPod = _(overview.pods)
@@ -719,7 +719,7 @@ function OverviewController($scope,
       })
       .keyBy('metadata.labels["kubevirt.io/vmUID"]')
       .value();
-    var ovmIdToVm = _(overview.virtualMachines)
+    var ovmIdToVm = _(overview.virtualMachineInstances)
       .values()
       .filter(function (vm) {
         return !!getOvmId(vm);
@@ -729,7 +729,7 @@ function OverviewController($scope,
       })
       .value();
     var podsOfOvms = [];
-    _.each(overview.offlineVirtualMachines, function (ovm) {
+    _.each(overview.virtualMachines, function (ovm) {
       var ovmId = ovm.metadata.uid;
       var vm = ovmIdToVm[ovmId];
       if (!vm) {
@@ -933,17 +933,17 @@ function OverviewController($scope,
     });
   };
 
-  var updateServicesForOvms = function () {
-    if (!overview.offlineVirtualMachines || !state.allServices) {
+  var updateServicesForVms = function () {
+    if (!overview.virtualMachines || !state.allServices) {
       return;
     }
-    _.each(overview.offlineVirtualMachines, function(ovm) {
-      var ovmDomain = _.get(ovm, ['metadata', 'labels', 'kubevirt.io/domain']);
-      if (!ovmDomain) {
+    _.each(overview.virtualMachines, function(vm) {
+      var vmDomain = _.get(vm, ['metadata', 'labels', 'kubevirt.io/domain']);
+      if (!vmDomain) {
         return;
       }
 
-      ovm.services = _.filter(state.allServices, { spec: { selector: { "kubevirt.io/domain": ovmDomain } } });
+      vm._services = _.filter(state.allServices, { spec: { selector: { "kubevirt.io/domain": vmDomain } } });
     });
   };
 
@@ -973,7 +973,7 @@ function OverviewController($scope,
     _.each(toUpdate, updateServicesForObjects);
 
     updateRoutesByApp();
-    updateServicesForOvms();
+    updateServicesForVms();
   };
 
   // Group routes by the services they route to (either as a primary service or
@@ -1520,26 +1520,26 @@ function OverviewController($scope,
     }
 
     if ($scope.KUBEVIRT_ENABLED) {
-      var ovmCallback = function (ovms) {
-        overview.offlineVirtualMachines = ovms.by('metadata.name');
+      var vmCallback = function (vms) {
+        overview.virtualMachines = vms.by('metadata.name');
         updateVirtualMachineMapping();
-        updateServicesForOvms(); // https://github.com/kubevirt/user-guide/blob/master/service.md
+        updateServicesForVms(); // https://github.com/kubevirt/user-guide/blob/master/service.md
         updateFilter();
       };
       watches.push(DataService.watch(
         KubevirtVersions.virtualMachine,
         context,
-        ovmCallback,
+        vmCallback,
         { poll: limitWatches, pollInterval: DEFAULT_POLL_INTERVAL }));
-      var vmCallback = function (vms) {
-        overview.virtualMachines = vms.by('metadata.name');
+      var vmiCallback = function (vmis) {
+        overview.virtualMachineInstances = vmis.by('metadata.name');
         updateVirtualMachineMapping();
         updateFilter();
       };
       watches.push(DataService.watch(
         KubevirtVersions.virtualMachineInstance,
         context,
-        vmCallback,
+        vmiCallback,
         { poll: limitWatches, pollInterval: DEFAULT_POLL_INTERVAL }));
     }
 

@@ -53,7 +53,7 @@
         return false;
       }
 
-      return $filter('canIDoAny')('offlineVirtualMachines');
+      return $filter('canIDoAny')('virtualMachineInstances');
     };
     row.projectName = $routeParams.project;
 

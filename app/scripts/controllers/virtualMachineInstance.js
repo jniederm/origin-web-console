@@ -9,7 +9,8 @@ angular.module('openshiftConsole')
                                          Navigate,
                                          MetricsService,
                                          ProjectsService,
-                                         KubevirtVersions) {
+                                         KubevirtVersions,
+                                         filterVmiPods) {
     $scope.projectName = $routeParams.project;
     $scope.alerts = {};
     $scope.logOptions = {};
@@ -52,19 +53,11 @@ angular.module('openshiftConsole')
     var allPods = {}; // {[podName: string]: Pod}
 
     function updatePods() {
-      if (!$scope.vm) {
+      if (!$scope.vmi) {
         $scope.pods = [];
         return;
       }
-      $scope.pods = _(allPods)
-        .filter(function (pod) {
-          return _.get(pod, 'metadata.labels["kubevirt.io"]') === 'virt-launcher' &&
-            _.get(pod, 'metadata.labels["kubevirt.io/domain"]') === $scope.vm.metadata.name;
-        })
-        .sortBy(function (pod) {
-          return new Date(pod.metadata.creationTimestamp);
-        })
-        .value();
+      $scope.pods = filterVmiPods(allPods, $scope.vmi.metadata.name);
     }
 
     var vmiLoadingError;
@@ -280,6 +273,25 @@ angular.module('openshiftConsole')
       },
       templateUrl: 'views/directives/vm-state-icon.html'
     };
+  });
+
+/**
+ * @param {Array<Pod>} all pods
+ * @param {string} vmi domain name
+ * @returns {Array<Pod>} virt-launcher pods related to the vmi of specified name
+ *                       sorted by creation time starting by the latest
+ */
+angular.module('openshiftConsole')
+  .constant('filterVmiPods', function (pods, vmiDomainName) {
+    return _(pods)
+      .filter(function (pod) {
+        return _.get(pod, 'metadata.labels["kubevirt.io"]') === 'virt-launcher' &&
+          _.get(pod, 'metadata.labels["kubevirt.io/domain"]') === vmiDomainName;
+      })
+      .sortBy(function (pod) {
+        return new Date(pod.metadata.creationTimestamp);
+      })
+      .value();
   });
 
 /*

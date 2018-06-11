@@ -6,7 +6,7 @@
       <div ng-if="!loaded()" class="mar-top-xl">Loading...</div>
       <div ng-if="loaded() && vm">
         <h1 class="contains-actions">
-          <div class="pull-right dropdown" ng-show="(vmi && 'virtualMachinesInstances' | canIDoAny) || (vm && 'virtualMachines' | canIDoAny)">
+          <div class="pull-right dropdown" ng-show="(vmi && 'virtualMachinesInstances' | canIDoAny) || (vm && 'virtualMachineInstances' | canIDoAny)">
             <button type="button" class="dropdown-toggle actions-dropdown-btn btn btn-default hidden-xs" data-toggle="dropdown">
               Actions
               <span class="caret"></span>
@@ -118,7 +118,7 @@
               </div>
             </uib-tab>
 
-            <uib-tab ng-if="metricsAvailable" heading="Metrics" active="selectedTab.metrics">
+            <uib-tab ng-if="metricsAvailable && pods[0]" heading="Metrics" active="selectedTab.metrics">
               <!-- Use ng-if to remove the metrics directive when the tab is not active so
                    we don't update in the background. -->
               <pod-metrics
