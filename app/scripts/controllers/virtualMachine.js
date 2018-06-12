@@ -11,7 +11,7 @@ angular.module('openshiftConsole')
                                          KubevirtVersions,
                                          VmActions,
                                          MetricsService,
-                                         filterVmiPods) {
+                                         VmHelpers) {
     $scope.projectName = $routeParams.project;
     $scope.alerts = {};
     $scope.logOptions = {};
@@ -98,7 +98,7 @@ angular.module('openshiftConsole')
             $scope.pods = [];
             return;
           }
-          $scope.pods = filterVmiPods(allPods, $scope.vmi.metadata.name);
+          $scope.pods = VmHelpers.filterVmiPods(allPods, $scope.vmi.metadata.name);
         }
 
         function updateLoadingAlert() {

@@ -10,7 +10,7 @@ angular.module('openshiftConsole')
                                          MetricsService,
                                          ProjectsService,
                                          KubevirtVersions,
-                                         filterVmiPods) {
+                                         VmHelpers) {
     $scope.projectName = $routeParams.project;
     $scope.alerts = {};
     $scope.logOptions = {};
@@ -57,7 +57,7 @@ angular.module('openshiftConsole')
         $scope.pods = [];
         return;
       }
-      $scope.pods = filterVmiPods(allPods, $scope.vmi.metadata.name);
+      $scope.pods = VmHelpers.filterVmiPods(allPods, $scope.vmi.metadata.name);
     }
 
     var vmiLoadingError;
@@ -248,14 +248,6 @@ angular.module('openshiftConsole')
   });
 
 angular.module('openshiftConsole')
-  .filter('listUrl', ['Navigate', 'APIService', function (Navigate, APIService) {
-    return function (resource, project) {
-      var resource = APIService.kindToResource(kind);
-      return Navigate.resourceListURL(resource, project);
-    };
-  }]);
-
-angular.module('openshiftConsole')
   .directive('vmState', function () {
     return {
       scope: {
@@ -273,25 +265,6 @@ angular.module('openshiftConsole')
       },
       templateUrl: 'views/directives/vm-state-icon.html'
     };
-  });
-
-/**
- * @param {Array<Pod>} all pods
- * @param {string} vmi domain name
- * @returns {Array<Pod>} virt-launcher pods related to the vmi of specified name
- *                       sorted by creation time starting by the latest
- */
-angular.module('openshiftConsole')
-  .constant('filterVmiPods', function (pods, vmiDomainName) {
-    return _(pods)
-      .filter(function (pod) {
-        return _.get(pod, 'metadata.labels["kubevirt.io"]') === 'virt-launcher' &&
-          _.get(pod, 'metadata.labels["kubevirt.io/domain"]') === vmiDomainName;
-      })
-      .sortBy(function (pod) {
-        return new Date(pod.metadata.creationTimestamp);
-      })
-      .value();
   });
 
 /*
@@ -312,13 +285,13 @@ const result = validLines
       accum[osId] = osName
       return accum
     }, {})
-console.log('const osIdToName =', result)
+console.log('var osIdToName =', result)
  */
 angular.module('openshiftConsole')
   .filter('humanizeOs', function () {
     return function (osinfoId) {
       // osinfo-db-20180502-1.fc27.noarch
-      const osIdToName = {
+      var osIdToName = {
         'alpinelinux3.5': 'Alpine Linux 3.5',
         'alpinelinux3.6': 'Alpine Linux 3.6',
         'alpinelinux3.7': 'Alpine Linux 3.7',
@@ -723,7 +696,7 @@ angular.module('openshiftConsole')
         'winnt4.0': 'Microsoft Windows NT Server 4.0',
         winvista: 'Microsoft Windows Vista',
         winxp: 'Microsoft Windows XP'
-      }
+      };
       return osIdToName[osinfoId] || osinfoId;
     };
   });

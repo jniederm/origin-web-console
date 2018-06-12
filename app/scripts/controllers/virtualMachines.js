@@ -11,7 +11,7 @@ angular.module('openshiftConsole')
     'LabelFilter',
     'Logger',
     'KubevirtVersions',
-    'getVmReferenceId',
+    'VmHelpers',
     function (
     $filter,
     $routeParams,
@@ -22,7 +22,7 @@ angular.module('openshiftConsole')
     LabelFilter,
     Logger,
     KubevirtVersions,
-    getVmReferenceId
+    VmHelpers
     ) {
     $scope.projectName = $routeParams.project;
     $scope.unfilteredVmis = {};   // {{ [vmName: string]: Vmi }}
@@ -82,7 +82,7 @@ angular.module('openshiftConsole')
          * @return {{ [vmName: string]: { vm?: Vm, ovm?: Ovm } }}
          */
         function mergeVmsAndVmis(vms, vmis) {
-          var vmIdToVmi = _.keyBy(vmis, getVmReferenceId);
+          var vmIdToVmi = _.keyBy(vmis, VmHelpers.getVmReferenceId);
           var mergedVms = _.map(vms, function (vm) {
             var vmi = vmIdToVmi[vm.metadata.uid];
             var mergedVm = { vm: vm };
@@ -105,19 +105,54 @@ angular.module('openshiftConsole')
   }]);
 
 angular.module('openshiftConsole')
-  .constant('getVmReferenceId', function (vmi) {
-    var references = _.get(vmi, 'metadata.ownerReferences');
-    if (references === undefined) {
-      return undefined;
-    }
-    return _(references)
-      .filter({ kind: 'OfflineVirtualMachine' }) // TODO rename to VirtualMachine
-      .first()
-      .uid;
-  });
+  .factory('VmHelpers', [
+    'KubevirtVersions',
+    function (KubevirtVersions) {
+
+      /**
+       * @param {Pod} pod
+       * @return {?string} virtual machine instance domain name if the pod is a 'virt-launcher' pod,
+       *                   `null` otherwise
+       */
+      function getDomainName(pod) {
+        var isVirtLauncher = _.get(pod, 'metadata.labels["kubevirt.io"]') === 'virt-launcher';
+        var domainName = _.get(pod, 'metadata.labels["kubevirt.io/domain"]');
+        return (isVirtLauncher && domainName) || null;
+      }
+
+      return {
+        getVmReferenceId: function (vmi) {
+          var references = _.get(vmi, 'metadata.ownerReferences');
+          if (references === undefined) {
+            return undefined;
+          }
+          return _(references)
+            .filter({ kind: KubevirtVersions.virtualMachine.kind })
+            .first()
+            .uid;
+        },
+        /**
+         * @param {Array<Pod>} pods all pods
+         * @param {string} vmiDomainName domain name
+         * @returns {Array<Pod>} virt-launcher pods related to the vmi of specified name
+         *                       sorted by creation time starting by the latest
+         */
+        filterVmiPods: function (pods, vmiDomainName) {
+          return _(pods)
+            .filter(function (pod) {
+              return getDomainName(pod) === vmiDomainName;
+            })
+            .sortBy(function (pod) {
+              return new Date(pod.metadata.creationTimestamp);
+            })
+            .value();
+        },
+        getDomainName: getDomainName
+      };
+    }]);
 
 angular.module('openshiftConsole').constant('KubevirtVersions', {
-  // TODO remove ovm and add vmi
+  // TODO Mark finish renaming when appropriate
   virtualMachine: {
     resource: 'offlinevirtualmachines',
     group: 'kubevirt.io',

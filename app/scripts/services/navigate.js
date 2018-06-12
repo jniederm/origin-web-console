@@ -357,8 +357,8 @@ angular.module("openshiftConsole")
           'serviceinstances': 'service-instances',
           'persistentvolumeclaims': 'storage',
           'statefulsets' : 'stateful-sets',
-          [KubevirtVersions.virtualMachine.resource]: 'virtual-machines',
         };
+        routeMap[KubevirtVersions.virtualMachine.resource] = 'virtual-machines';
 
         return URI.expand("project/{projectName}/browse/{browsePath}", {
           projectName: projectName,

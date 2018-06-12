@@ -2902,116 +2902,6 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
   );
 
 
-  $templateCache.put('views/browse/offline-virtual-machine.html',
-    "<div class=\"middle pod\">\n" +
-    "<div class=\"middle-header\">\n" +
-    "<div class=\"container-fluid\">\n" +
-    "<breadcrumbs breadcrumbs=\"breadcrumbs\"></breadcrumbs>\n" +
-    "<alerts alerts=\"alerts\"></alerts>\n" +
-    "<div ng-if=\"!loaded()\" class=\"mar-top-xl\">Loading...</div>\n" +
-    "<div ng-if=\"loaded() && ovm\">\n" +
-    "<h1 class=\"contains-actions\">\n" +
-    "<div class=\"pull-right dropdown\" ng-show=\"(vm && 'virtualMachines' | canIDoAny) || (ovm && 'offlineVirtualMachines' | canIDoAny)\">\n" +
-    "<button type=\"button\" class=\"dropdown-toggle actions-dropdown-btn btn btn-default hidden-xs\" data-toggle=\"dropdown\">\n" +
-    "Actions\n" +
-    "<span class=\"caret\"></span>\n" +
-    "</button>\n" +
-    "<a href=\"\" class=\"dropdown-toggle actions-dropdown-kebab visible-xs-inline\" data-toggle=\"dropdown\"><i class=\"fa fa-ellipsis-v\"></i><span class=\"sr-only\">Actions</span></a>\n" +
-    "<ul class=\"dropdown-menu dropdown-menu-right actions action-button\">\n" +
-    "<dropdown-item action=\"VmActions.start(ovm, projectContext)\" ng-if=\"KubevirtVersions.offlineVirtualMachine | canI : 'update'\" enabled=\"VmActions.canStart(ovm)\">Start</dropdown-item>\n" +
-    "<dropdown-item action=\"VmActions.restart(vm, projectContext)\" ng-if=\"KubevirtVersions.virtualMachine | canI : 'delete'\" enabled=\"VmAction.canRestart(vm, ovm)\">Restart</dropdown-item>\n" +
-    "<dropdown-item action=\"VmActions.stop(ovm, projectContext)\" ng-if=\"KubevirtVersions.offlineVirtualMachine | canI : 'update'\" enabled=\"VmActions.canStop(ovm)\">Stop</dropdown-item>\n" +
-    "<li ng-if=\"KubevirtVersions.offlineVirtualMachine | canI : 'update'\">\n" +
-    "<a ng-href=\"{{ovm | editYamlURL}}\" role=\"button\">Edit YAML</a>\n" +
-    "</li>\n" +
-    "<li ng-if=\"KubevirtVersions.offlineVirtualMachine | canI : 'delete'\">\n" +
-    "<delete-link kind=\"OfflineVirtualMachine\" group=\"{{KubevirtVersions.offlineVirtualMachine.group}}\" resource-name=\"{{ovm.metadata.name}}\" project-name=\"{{ovm.metadata.namespace}}\" alerts=\"alerts\">\n" +
-    "</delete-link>\n" +
-    "</li>\n" +
-    "</ul>\n" +
-    "</div>\n" +
-    "{{ovm.metadata.name}}\n" +
-    "<small class=\"meta\">created <span am-time-ago=\"ovm.metadata.creationTimestamp\"></span></small>\n" +
-    "</h1>\n" +
-    "<labels labels=\"ovm.metadata.labels\" clickable=\"true\" kind=\"virtual-machines\" title-kind=\"Offline virtual machine\" project-name=\"{{ovm.metadata.namespace}}\" limit=\"3\"></labels>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "<div class=\"middle-content\" persist-tab-state>\n" +
-    "<div class=\"container-fluid\">\n" +
-    "<div class=\"row\" ng-if=\"ovm\">\n" +
-    "<div class=\"col-md-12\">\n" +
-    "<uib-tabset>\n" +
-    "<uib-tab heading=\"Details\" active=\"selectedTab.details\">\n" +
-    "<uib-tab-heading>Details</uib-tab-heading>\n" +
-    "<div class=\"resource-details\">\n" +
-    "<div class=\"row\">\n" +
-    "<div class=\"col-lg-6\">\n" +
-    "<h3>\n" +
-    "Status\n" +
-    "</h3>\n" +
-    "<dl class=\"dl-horizontal left\">\n" +
-    "<dt>State:</dt>\n" +
-    "<dd>\n" +
-    "<vm-state state=\"vm | vmStateText : ovm\"/>\n" +
-    "<vm-actions-line vm=\"vm\" ovm=\"ovm\" context=\"projectContext\"></vm-actions-line>\n" +
-    "<span ng-if=\"ovm.metadata.deletionTimestamp\">(expires {{ovm.metadata.deletionTimestamp | date : 'medium'}})</span>\n" +
-    "</dd>\n" +
-    "<dt>Uptime:</dt>\n" +
-    "<dd>\n" +
-    "{{pods[0] | vmPodUptime | orDashes}}\n" +
-    "</dd>\n" +
-    "<dt>Node:</dt>\n" +
-    "<dd>\n" +
-    "{{vm.metadata.labels['kubevirt.io/nodeName'] | orDashes}}\n" +
-    "</dd>\n" +
-    "<dt>Virtual machine:</dt>\n" +
-    "<dd>\n" +
-    "<a ng-if=\"vm\" ng-href=\"{{vm | navigateResourceURL}}\">{{vm.metadata.name}}</a>\n" +
-    "<span ng-if=\"!vm\">--</span>\n" +
-    "</dd>\n" +
-    "<dt>Pod:</dt>\n" +
-    "<dd>\n" +
-    "<span ng-if=\"!pods.length\">--</span>\n" +
-    "<ul ng-if=\"pods.length\" class=\"list-unstyled\">\n" +
-    "<li ng-repeat=\"pod in pods track by pod.metadata.uid\">\n" +
-    "<a ng-href=\"{{pod | navigateResourceURL}}\">{{pod.metadata.name}}</a>\n" +
-    "</li>\n" +
-    "</ul>\n" +
-    "</dd>\n" +
-    "</dl>\n" +
-    "</div>\n" +
-    "<div class=\"col-lg-6\">\n" +
-    "<h3>\n" +
-    "Configuration\n" +
-    "</h3>\n" +
-    "<dl class=\"dl-horizontal left\">\n" +
-    "<dt>Memory:</dt>\n" +
-    "<dd>\n" +
-    "{{ovm.spec.template | vmMemory | orDashes}}\n" +
-    "</dd>\n" +
-    "<dt>Operating system:</dt>\n" +
-    "<dd>\n" +
-    "{{ovm.spec.template | vmOs | orDashes}}\n" +
-    "</dd>\n" +
-    "</dl>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "</uib-tab>\n" +
-    "<uib-tab active=\"selectedTab.events\" ng-if=\"eventsVersion | canI : 'watch'\">\n" +
-    "<uib-tab-heading>Events</uib-tab-heading>\n" +
-    "<events api-objects=\"[ ovm ]\" project-context=\"projectContext\" ng-if=\"selectedTab.events\"></events>\n" +
-    "</uib-tab>\n" +
-    "</uib-tabset>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "</div>"
-  );
-
-
   $templateCache.put('views/browse/persistent-volume-claim.html',
     "<div class=\"middle\">\n" +
     "<div class=\"middle-header\">\n" +
@@ -4171,41 +4061,42 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
   );
 
 
-  $templateCache.put('views/browse/virtual-machine.html',
+  $templateCache.put('views/browse/virtual-machine-instance.html',
     "<div class=\"middle pod\">\n" +
     "<div class=\"middle-header\">\n" +
     "<div class=\"container-fluid\">\n" +
     "<breadcrumbs breadcrumbs=\"breadcrumbs\"></breadcrumbs>\n" +
     "<alerts alerts=\"alerts\"></alerts>\n" +
     "<div ng-if=\"!loaded()\" class=\"mar-top-xl\">Loading...</div>\n" +
-    "<div ng-if=\"loaded() && vm\">\n" +
+    "<div ng-if=\"loaded() && vmi\">\n" +
     "<h1 class=\"contains-actions\">\n" +
-    "<div class=\"pull-right dropdown\" ng-show=\"'virtualMachines' | canIDoAny\">\n" +
+    "<div class=\"pull-right dropdown\" ng-show=\"'virtualMachineInstances' | canIDoAny\">\n" +
     "<button type=\"button\" class=\"dropdown-toggle actions-dropdown-btn btn btn-default hidden-xs\" data-toggle=\"dropdown\">\n" +
     "Actions\n" +
     "<span class=\"caret\"></span>\n" +
     "</button>\n" +
     "<a href=\"\" class=\"dropdown-toggle actions-dropdown-kebab visible-xs-inline\" data-toggle=\"dropdown\"><i class=\"fa fa-ellipsis-v\"></i><span class=\"sr-only\">Actions</span></a>\n" +
     "<ul class=\"dropdown-menu dropdown-menu-right actions action-button\">\n" +
-    "<li ng-if=\"KubevirtVersions.virtualMachine | canI : 'update'\">\n" +
-    "<a ng-href=\"{{vm | editYamlURL}}\" role=\"button\">Edit YAML</a>\n" +
+    "<li ng-if=\"KubevirtVersions.virtualMachineInstance | canI : 'update'\">\n" +
+    "<a ng-href=\"{{vmi | editYamlURL}}\" role=\"button\">Edit YAML</a>\n" +
     "</li>\n" +
-    "<li ng-if=\"KubevirtVersions.virtualMachine | canI : 'delete'\">\n" +
-    "<delete-link kind=\"VirtualMachine\" group=\"{{KubevirtVersions.virtualMachine.group}}\" resource-name=\"{{vm.metadata.name}}\" project-name=\"{{vm.metadata.namespace}}\" alerts=\"alerts\">\n" +
+    "<li ng-if=\"KubevirtVersions.virtualMachineInstance | canI : 'delete'\">\n" +
+    "<delete-link kind=\"{{KubevirtVersions.virtualMachineInstance.kind}}\" group=\"{{KubevirtVersions.virtualMachineInstance.group}}\" resource-name=\"{{vmi.metadata.name}}\" project-name=\"{{vmi.metadata.namespace}}\" redirect-url=\"{{vm ? (vm | navigateResourceURL) : (Navigate.resourceListURL(KubevirtVersions.virtualMachine.resource, vmi.metadata.namespace))}}\" alerts=\"alerts\">\n" +
     "</delete-link>\n" +
     "</li>\n" +
     "</ul>\n" +
     "</div>\n" +
-    "{{vm.metadata.name}}\n" +
-    "<small class=\"meta\">created <span am-time-ago=\"vm.metadata.creationTimestamp\"></span></small>\n" +
+    "{{vmi.metadata.name}}\n" +
+    "<small class=\"meta\">created {{vmi.metadata.creationTimestamp | amTimeAgo}}</small>\n" +
+    "<small class=\"meta\" ng-if=\"vm.metadata.deletionTimestamp\">(expires {{vm.metadata.deletionTimestamp | date : 'medium'}})</small>\n" +
     "</h1>\n" +
-    "<labels labels=\"vm.metadata.labels\" clickable=\"true\" kind=\"virtual-machines\" title-kind=\"Virtual machines\" project-name=\"{{vm.metadata.namespace}}\" limit=\"3\"></labels>\n" +
+    "<labels labels=\"vmi.metadata.labels\" clickable=\"true\" kind=\"virtual-machines\" title-kind=\"Virtual machines\" project-name=\"{{vmi.metadata.namespace}}\" limit=\"3\"></labels>\n" +
     "</div>\n" +
     "</div>\n" +
     "</div>\n" +
     "<div class=\"middle-content\" persist-tab-state>\n" +
     "<div class=\"container-fluid\">\n" +
-    "<div class=\"row\" ng-if=\"vm\">\n" +
+    "<div class=\"row\" ng-if=\"vmi\">\n" +
     "<div class=\"col-md-12\">\n" +
     "<uib-tabset>\n" +
     "<uib-tab heading=\"Details\" active=\"selectedTab.details\">\n" +
@@ -4219,21 +4110,17 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "<dl class=\"dl-horizontal left\">\n" +
     "<dt>State:</dt>\n" +
     "<dd>\n" +
-    "<vm-state state=\"vm.status.phase\"/>\n" +
-    "<span ng-if=\"vm.metadata.deletionTimestamp\">(expires {{vm.metadata.deletionTimestamp | date : 'medium'}})</span>\n" +
-    "</dd>\n" +
-    "<dt>Uptime:</dt>\n" +
-    "<dd>\n" +
-    "{{pods[0] | vmPodUptime}}\n" +
+    "<vm-state state=\"vmi.status.phase\"/>\n" +
+    "<span ng-if=\"vmi.metadata.deletionTimestamp\">(expires {{vmi.metadata.deletionTimestamp | date : 'medium'}})</span>\n" +
     "</dd>\n" +
     "<dt>Node:</dt>\n" +
     "<dd>\n" +
-    "{{vm.metadata.labels['kubevirt.io/nodeName'] || '--'}}\n" +
+    "{{vmi.metadata.labels['kubevirt.io/nodeName'] || '--'}}\n" +
     "</dd>\n" +
     "<dt>Offline virtual machine:</dt>\n" +
     "<dd>\n" +
-    "<a ng-if=\"ovm\" ng-href=\"{{ovm | navigateResourceURL}}\">{{ovm.metadata.name}}</a>\n" +
-    "<span ng-if=\"!ovm\">--</span>\n" +
+    "<a ng-if=\"vm\" ng-href=\"{{vm | navigateResourceURL}}\">{{vm.metadata.name}}</a>\n" +
+    "<span ng-if=\"!vm\">--</span>\n" +
     "</dd>\n" +
     "<dt>Pod:</dt>\n" +
     "<dd>\n" +
@@ -4253,16 +4140,142 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "<dl class=\"dl-horizontal left\">\n" +
     "<dt>Memory:</dt>\n" +
     "<dd>\n" +
-    "{{vm | vmMemory | orDashes}}\n" +
+    "{{vmi | vmMemory | orDefault}}\n" +
+    "</dd>\n" +
+    "<dt>CPU:</dt>\n" +
+    "<dd>\n" +
+    "{{vmi | vmCpu | orDefault}}\n" +
     "</dd>\n" +
     "<dt>Operating system:</dt>\n" +
     "<dd>\n" +
-    "{{vm | vmOs | orDashes}}\n" +
+    "{{vmi | vmOs | humanizeOs | orDashes}}\n" +
     "</dd>\n" +
     "</dl>\n" +
     "</div>\n" +
     "</div>\n" +
     "</div>\n" +
+    "</uib-tab>\n" +
+    "<uib-tab ng-if=\"metricsAvailable && pods[0]\" heading=\"Metrics\" active=\"selectedTab.metrics\">\n" +
+    "\n" +
+    "<pod-metrics ng-if=\"selectedTab.metrics\" pod=\"pods[0]\" alerts=\"alerts\">\n" +
+    "</pod-metrics>\n" +
+    "</uib-tab>\n" +
+    "<uib-tab active=\"selectedTab.events\" ng-if=\"eventsVersion | canI : 'watch'\">\n" +
+    "<uib-tab-heading>Events</uib-tab-heading>\n" +
+    "<events api-objects=\"[ vmi ]\" project-context=\"projectContext\" ng-if=\"selectedTab.events\"></events>\n" +
+    "</uib-tab>\n" +
+    "</uib-tabset>\n" +
+    "</div>\n" +
+    "</div>\n" +
+    "</div>\n" +
+    "</div>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('views/browse/virtual-machine.html',
+    "<div class=\"middle pod\">\n" +
+    "<div class=\"middle-header\">\n" +
+    "<div class=\"container-fluid\">\n" +
+    "<breadcrumbs breadcrumbs=\"breadcrumbs\"></breadcrumbs>\n" +
+    "<alerts alerts=\"alerts\"></alerts>\n" +
+    "<div ng-if=\"!loaded()\" class=\"mar-top-xl\">Loading...</div>\n" +
+    "<div ng-if=\"loaded() && vm\">\n" +
+    "<h1 class=\"contains-actions\">\n" +
+    "<div class=\"pull-right dropdown\" ng-show=\"(vmi && 'virtualMachinesInstances' | canIDoAny) || (vm && 'virtualMachineInstances' | canIDoAny)\">\n" +
+    "<button type=\"button\" class=\"dropdown-toggle actions-dropdown-btn btn btn-default hidden-xs\" data-toggle=\"dropdown\">\n" +
+    "Actions\n" +
+    "<span class=\"caret\"></span>\n" +
+    "</button>\n" +
+    "<a href=\"\" class=\"dropdown-toggle actions-dropdown-kebab visible-xs-inline\" data-toggle=\"dropdown\"><i class=\"fa fa-ellipsis-v\"></i><span class=\"sr-only\">Actions</span></a>\n" +
+    "<ul class=\"dropdown-menu dropdown-menu-right actions action-button\">\n" +
+    "<dropdown-item action=\"VmActions.start(vm, projectContext)\" ng-if=\"KubevirtVersions.virtualMachine | canI : 'update'\" enabled=\"VmActions.canStart(vm)\">Start</dropdown-item>\n" +
+    "<dropdown-item action=\"VmActions.restart(vmi, projectContext)\" ng-if=\"KubevirtVersions.virtualMachineInstance | canI : 'delete'\" enabled=\"VmActions.canRestart(vmi, vm)\">Restart</dropdown-item>\n" +
+    "<dropdown-item action=\"VmActions.stop(vm, projectContext)\" ng-if=\"KubevirtVersions.virtualMachine | canI : 'update'\" enabled=\"VmActions.canStop(vm)\">Stop</dropdown-item>\n" +
+    "<li ng-if=\"KubevirtVersions.virtualMachine | canI : 'update'\">\n" +
+    "<a ng-href=\"{{vm | editYamlURL}}\" role=\"button\">Edit YAML</a>\n" +
+    "</li>\n" +
+    "<li ng-if=\"KubevirtVersions.virtualMachine | canI : 'delete'\">\n" +
+    "<delete-link kind=\"{{KubevirtVersions.virtualMachine.kind}}\" group=\"{{KubevirtVersions.virtualMachine.group}}\" resource-name=\"{{vm.metadata.name}}\" project-name=\"{{vm.metadata.namespace}}\" alerts=\"alerts\">\n" +
+    "</delete-link>\n" +
+    "</li>\n" +
+    "</ul>\n" +
+    "</div>\n" +
+    "{{vm.metadata.name}}\n" +
+    "<small class=\"meta\">created {{vm.metadata.creationTimestamp | amTimeAgo : true}}</small>\n" +
+    "<small class=\"meta\" ng-if=\"vm.metadata.deletionTimestamp\">(expires {{vm.metadata.deletionTimestamp | date : 'medium'}})</small>\n" +
+    "</h1>\n" +
+    "<labels labels=\"vm.metadata.labels\" clickable=\"true\" kind=\"virtual-machines\" title-kind=\"Virtual machine\" project-name=\"{{vm.metadata.namespace}}\" limit=\"3\"></labels>\n" +
+    "</div>\n" +
+    "</div>\n" +
+    "</div>\n" +
+    "<div class=\"middle-content\" persist-tab-state>\n" +
+    "<div class=\"container-fluid\">\n" +
+    "<div class=\"row\" ng-if=\"vm\">\n" +
+    "<div class=\"col-md-12\">\n" +
+    "<uib-tabset>\n" +
+    "<uib-tab heading=\"Details\" active=\"selectedTab.details\">\n" +
+    "<uib-tab-heading>Details</uib-tab-heading>\n" +
+    "<div class=\"resource-details\">\n" +
+    "<div class=\"row\">\n" +
+    "<div class=\"col-lg-6\">\n" +
+    "<h3>\n" +
+    "Status\n" +
+    "</h3>\n" +
+    "<dl class=\"dl-horizontal left\">\n" +
+    "<dt>Node:</dt>\n" +
+    "<dd>\n" +
+    "{{vmi.metadata.labels['kubevirt.io/nodeName'] | orDashes}}\n" +
+    "</dd>\n" +
+    "<dt>Virtual machine instance:</dt>\n" +
+    "<dd>\n" +
+    "<span ng-if=\"vmi\">\n" +
+    "<a ng-href=\"{{vmi | navigateResourceURL}}\">{{vmi.metadata.name}}</a>\n" +
+    "<span class=\"small text-muted\">(<vm-state state=\"vmi | vmStateText\"></vm-state>)</span>\n" +
+    "</span>\n" +
+    "<span ng-if=\"!vmi\">--</span>\n" +
+    "</dd>\n" +
+    "<dt>Pod:</dt>\n" +
+    "<dd>\n" +
+    "<span ng-if=\"!pods.length\">--</span>\n" +
+    "<ul ng-if=\"pods.length\" class=\"list-unstyled\">\n" +
+    "<li ng-repeat=\"pod in pods track by pod.metadata.uid\">\n" +
+    "<a ng-href=\"{{pod | navigateResourceURL}}\">{{pod.metadata.name}}</a>\n" +
+    "</li>\n" +
+    "</ul>\n" +
+    "</dd>\n" +
+    "</dl>\n" +
+    "</div>\n" +
+    "<div class=\"col-lg-6\">\n" +
+    "<h3>\n" +
+    "Configuration\n" +
+    "</h3>\n" +
+    "<dl class=\"dl-horizontal left\">\n" +
+    "<dt>Running:</dt>\n" +
+    "<dd>\n" +
+    "{{vm.spec.running}}\n" +
+    "</dd>\n" +
+    "<dt>Memory:</dt>\n" +
+    "<dd>\n" +
+    "{{vm.spec.template | vmMemory | orDashes}}\n" +
+    "</dd>\n" +
+    "<dt>CPU:</dt>\n" +
+    "<dd>\n" +
+    "{{vm.spec.template | vmCpu | orDashes}}\n" +
+    "</dd>\n" +
+    "<dt>Operating system:</dt>\n" +
+    "<dd>\n" +
+    "{{vm.spec.template | vmOs | humanizeOs | orDashes}}\n" +
+    "</dd>\n" +
+    "</dl>\n" +
+    "</div>\n" +
+    "</div>\n" +
+    "</div>\n" +
+    "</uib-tab>\n" +
+    "<uib-tab ng-if=\"metricsAvailable && pods[0]\" heading=\"Metrics\" active=\"selectedTab.metrics\">\n" +
+    "\n" +
+    "<pod-metrics ng-if=\"selectedTab.metrics\" pod=\"pods[0]\" alerts=\"alerts\">\n" +
+    "</pod-metrics>\n" +
     "</uib-tab>\n" +
     "<uib-tab active=\"selectedTab.events\" ng-if=\"eventsVersion | canI : 'watch'\">\n" +
     "<uib-tab-heading>Events</uib-tab-heading>\n" +
@@ -9700,27 +9713,27 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
 
   $templateCache.put('views/directives/vm-actions-line.html',
     "<span class=\"vm-detail-state-actions\">\n" +
-    "<span class=\"bar-separated\" ng-if=\"('offlineVirtualMachines' | canI : 'update') && ($ctrl.VmActions.canStart($ctrl.ovm))\">\n" +
-    "<a href=\"\" ng-click=\"$ctrl.VmActions.start($ctrl.ovm, $ctrl.context)\">Start</a>\n" +
+    "<span class=\"bar-separated\" ng-if=\"('virtualMachines' | canI : 'update') && ($ctrl.VmActions.canStart($ctrl.vm))\">\n" +
+    "<a href=\"\" ng-click=\"$ctrl.VmActions.start($ctrl.vm, $ctrl.context)\">Start</a>\n" +
     "</span>\n" +
-    "<span class=\"bar-separated\" ng-if=\"('virtualMachines' | canI : 'delete') && ($ctrl.VmActions.canRestart($ctrl.vm, $ctrl.ovm))\">\n" +
-    "<a href=\"\" ng-click=\"$ctrl.VmActions.restart($ctrl.vm, $ctrl.context)\">Restart</a>\n" +
+    "<span class=\"bar-separated\" ng-if=\"('virtualMachineInstances' | canI : 'delete') && ($ctrl.VmActions.canRestart($ctrl.vmi, $ctrl.vm))\">\n" +
+    "<a href=\"\" ng-click=\"$ctrl.VmActions.restart($ctrl.vmi, $ctrl.context)\">Restart</a>\n" +
     "</span>\n" +
-    "<span class=\"bar-separated\" ng-if=\"('offlineVirtualMachines' | canI : 'update') && ($ctrl.VmActions.canStop($ctrl.ovm))\">\n" +
-    "<a href=\"\" ng-click=\"$ctrl.VmActions.stop($ctrl.ovm, $ctrl.context)\">Stop</a>\n" +
+    "<span class=\"bar-separated\" ng-if=\"('virtualMachines' | canI : 'update') && ($ctrl.VmActions.canStop($ctrl.vm))\">\n" +
+    "<a href=\"\" ng-click=\"$ctrl.VmActions.stop($ctrl.vm, $ctrl.context)\">Stop</a>\n" +
     "</span>\n" +
     "</span>"
   );
 
 
   $templateCache.put('views/directives/vm-state-icon.html',
-    " <span ng-switch=\"state\" class=\"vm-detail-value\">\n" +
+    " <span ng-switch=\"state\">\n" +
     "<span class=\"pficon pficon-on-running\" ng-style=\"{color: '#3f9c35'}\" ng-switch-when=\"Running\"></span>\n" +
     "<span class=\"spinner spinner-xs spinner-inline\" ng-switch-when=\"Pending\"></span>\n" +
     "<span class=\"spinner spinner-xs spinner-inline\" ng-switch-when=\"Scheduling\"></span>\n" +
     "<span class=\"spinner spinner-xs spinner-inline\" ng-switch-when=\"Scheduled\"></span>\n" +
-    "<span class=\"pficon pficon-off\" ng-switch-when=\"Off\"></span>\n" +
-    "<span class=\"pficonpficon-error-circle-o\" ng-style=\"{color: '#a30000'}\" ng-switch-when=\"Failed\"></span>\n" +
+    "<span class=\"pficon pficon-off\" ng-switch-when=\"Not Running\"></span>\n" +
+    "<span class=\"pficon pficon-error-circle-o\" ng-style=\"{color: '#a30000'}\" ng-switch-when=\"Failed\"></span>\n" +
     "<span class=\"pficon pficon-unknown\" ng-switch-when=\"Unknown\"></span>\n" +
     "<span class=\"pficon pficon-unknown\" ng-switch-when=\"\"></span>\n" +
     "</span>"
@@ -11979,71 +11992,6 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
   );
 
 
-  $templateCache.put('views/offline-virtual-machines.html',
-    "<div class=\"middle\">\n" +
-    "<div class=\"middle-header header-toolbar\">\n" +
-    "<div class=\"container-fluid\">\n" +
-    "<div class=\"page-header page-header-bleed-right page-header-bleed-left\">\n" +
-    "<h1>\n" +
-    "Offline Virtual Machines\n" +
-    "</h1>\n" +
-    "</div>\n" +
-    "<div ng-if=\"mergedVms.length || filterWithZeroResults\" class=\"data-toolbar\">\n" +
-    "<div class=\"data-toolbar-filter\">\n" +
-    "<project-filter></project-filter>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "<div class=\"middle-content\">\n" +
-    "<div class=\"container-fluid\">\n" +
-    "<div class=\"row\">\n" +
-    "<div class=\"col-md-12\">\n" +
-    "<div ng-if=\"!mergedVms.length\">\n" +
-    "<p ng-if=\"!allVmsLoaded()\">\n" +
-    "Loading...\n" +
-    "</p>\n" +
-    "<div ng-if=\"allVmsLoaded()\" class=\"empty-state-message text-center\">\n" +
-    "<div ng-if=\"!filterWithZeroResults\">\n" +
-    "<h2>No virtual machines.</h2>\n" +
-    "<p>No virtual machines have been added to project {{projectName}}.</p>\n" +
-    "</div>\n" +
-    "<div ng-if=\"filterWithZeroResults\">\n" +
-    "<h2>The filter is hiding all virtual machines. <a href=\"\" ng-click=\"clearFilter()\" role=\"button\" class=\"nowrap\">Clear Filter</a></h2>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "<table class=\"table table-bordered table-mobile table-layout-fixed\" ng-if=\"mergedVms.length\">\n" +
-    "<thead>\n" +
-    "<tr>\n" +
-    "<th>Name</th>\n" +
-    "<th>Age</th>\n" +
-    "<th>VM</th>\n" +
-    "</tr>\n" +
-    "</thead>\n" +
-    "<tbody>\n" +
-    "<tr ng-repeat=\"mergedVm in mergedVms track by mergedVm.ovm.metadata.uid\" class=\"animate-repeat\">\n" +
-    "<td>\n" +
-    "<a href=\"{{mergedVm.ovm.metadata.name | navigateResourceURL : 'OfflineVirtualMachine' : mergedVm.ovm.metadata.namespace}}\">{{mergedVm.ovm.metadata.name}}</a>\n" +
-    "</td>\n" +
-    "<td>\n" +
-    "<span am-time-ago=\"mergedVm.ovm.metadata.creationTimestamp || mergedVm.vm.metadata.creationTimestamp\" am-without-suffix=\"true\"></span>\n" +
-    "</td>\n" +
-    "<td>\n" +
-    "<vm-state-icon state=\"mergedVm.vm.status.phase\"/>\n" +
-    "<a ng-if=\"mergedVm.vm\" href=\"{{mergedVm.vm | navigateResourceURL : 'VirtualMachine'}}\">{{mergedVm.vm.metadata.name}}</a>\n" +
-    "</td>\n" +
-    "</tr>\n" +
-    "</tbody>\n" +
-    "</table>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "</div>\n" +
-    "</div>"
-  );
-
-
   $templateCache.put('views/other-resources.html',
     "<div class=\"middle\">\n" +
     "<div class=\"middle-header header-toolbar\">\n" +
@@ -12417,10 +12365,10 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "</div>\n" +
     "</div>\n" +
     "\n" +
-    "<div ng-if=\"(overview.filteredOfflineVirtualMachines | size) && !overview.hidePipelineOtherResources\">\n" +
+    "<div ng-if=\"(overview.filteredVirtualMachines | size) && !overview.hidePipelineOtherResources\">\n" +
     "<h2>Virtual Machines</h2>\n" +
     "<div class=\"list-pf\">\n" +
-    "<virtual-machine-row ng-repeat=\"ovm in overview.filteredOfflineVirtualMachines track by (ovm | uid)\" api-object=\"ovm\" state=\"overview.state\"></virtual-machine-row>\n" +
+    "<virtual-machine-row ng-repeat=\"ovm in overview.filteredVirtualMachines track by (ovm | uid)\" api-object=\"ovm\" state=\"overview.state\"></virtual-machine-row>\n" +
     "</div>\n" +
     "</div>\n" +
     "\n" +
@@ -13328,7 +13276,9 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "<div class=\"list-pf-content\">\n" +
     "<div class=\"list-pf-name\">\n" +
     "<h3>\n" +
-    "<div class=\"component-label\"><span>Offline Virtual Machine</span></div>\n" +
+    "<div class=\"component-label\">\n" +
+    "<span>Virtual Machine</span>\n" +
+    "</div>\n" +
     "<a ng-href=\"{{row.apiObject | navigateResourceURL}}\">\n" +
     "<span ng-bind-html=\"row.apiObject.metadata.name | highlightKeywords : row.state.filterKeywords\"></span>\n" +
     "</a>\n" +
@@ -13349,13 +13299,13 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "<span class=\"sr-only\">Actions</span>\n" +
     "</button>\n" +
     "<ul class=\"dropdown-menu dropdown-menu-right\" uib-dropdown-menu role=\"menu\">\n" +
-    "<dropdown-item action=\"row.VmActions.start(row.apiObject, row.state.context)\" ng-if=\"row.KubevirtVersions.offlineVirtualMachine | canI : 'update'\" enabled=\"row.VmActions.canStart(row.apiObject)\">Start</dropdown-item>\n" +
-    "<dropdown-item action=\"row.VmActions.restart(row.apiObject._vm, row.state.context)\" ng-if=\"row.KubevirtVersions.virtualMachine | canI : 'delete'\" enabled=\"row.VmActions.canRestart(row.apiObject._vm, row.apiObject)\">Restart</dropdown-item>\n" +
-    "<dropdown-item action=\"row.VmActions.stop(row.apiObject, row.state.context)\" ng-if=\"row.KubevirtVersions.offlineVirtualMachine | canI : 'update'\" enabled=\"row.VmActions.canStop(row.apiObject)\">Stop</dropdown-item>\n" +
-    "<li ng-if=\"row.KubevirtVersions.offlineVirtualMachine | canI : 'update'\">\n" +
+    "<dropdown-item action=\"row.VmActions.start(row.apiObject, row.state.context)\" ng-if=\"row.KubevirtVersions.virtualMachine | canI : 'update'\" enabled=\"row.VmActions.canStart(row.apiObject)\">Start</dropdown-item>\n" +
+    "<dropdown-item action=\"row.VmActions.restart(row.apiObject._vm, row.state.context)\" ng-if=\"row.KubevirtVersions.virtualMachineInstance | canI : 'delete'\" enabled=\"row.VmActions.canRestart(row.apiObject._vm, row.apiObject)\">Restart</dropdown-item>\n" +
+    "<dropdown-item action=\"row.VmActions.stop(row.apiObject, row.state.context)\" ng-if=\"row.KubevirtVersions.virtualMachine | canI : 'update'\" enabled=\"row.VmActions.canStop(row.apiObject)\">Stop</dropdown-item>\n" +
+    "<li ng-if=\"row.KubevirtVersions.virtualMachine | canI : 'update'\">\n" +
     "<a ng-href=\"{{row.apiObject | editYamlURL}}\" role=\"button\">Edit YAML</a>\n" +
     "</li>\n" +
-    "<li ng-if=\"row.KubevirtVersions.offlineVirtualMachine | canI : 'delete'\">\n" +
+    "<li ng-if=\"row.KubevirtVersions.virtualMachine | canI : 'delete'\">\n" +
     "<delete-link kind=\"OfflineVirtualMachine\" group=\"{{row.OfflineVirtualMachineVersion.group}}\" stay-on-current-page=\"true\" resource-name=\"{{row.apiObject.metadata.name}}\" project-name=\"{{row.projectName}}\">\n" +
     "</delete-link>\n" +
     "</li>\n" +
@@ -13368,7 +13318,7 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "<div class=\"word-break\">\n" +
     "<span class=\"vm-detail-key\">State:</span>\n" +
     "<vm-state state=\"row.apiObject._vm | vmStateText : row.apiObject\"></vm-state>\n" +
-    "<vm-actions-line vm=\"row.apiObject._vm\" ovm=\"row.apiObject\" context=\"row.state.context\"></vm-actions-line>\n" +
+    "<vm-actions-line vmi=\"row.apiObject._vm\" ovm=\"row.apiObject\" context=\"row.state.context\"></vm-actions-line>\n" +
     "</div>\n" +
     "<div class=\"word-break\">\n" +
     "<span class=\"vm-detail-key\">Uptime:</span>\n" +
@@ -14435,6 +14385,11 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "<div class=\"page-header page-header-bleed-right page-header-bleed-left\">\n" +
     "<h1>\n" +
     "Virtual Machines\n" +
+    "<span class=\"page-header-link\">\n" +
+    "<a ng-href=\"http://kubevirt.io/user-guide/#/workloads/virtual-machines/README\" target=\"_blank\">\n" +
+    "Learn More <i class=\"fa fa-external-link\" aria-hidden=\"true\"></i>\n" +
+    "</a>\n" +
+    "</span>\n" +
     "</h1>\n" +
     "</div>\n" +
     "<div ng-if=\"mergedVms.length || filterWithZeroResults\" class=\"data-toolbar\">\n" +
@@ -14466,24 +14421,20 @@ angular.module('openshiftConsoleTemplates', []).run(['$templateCache', function(
     "<thead>\n" +
     "<tr>\n" +
     "<th>Name</th>\n" +
-    "<th>State</th>\n" +
-    "<th>Uptime</th>\n" +
-    "<th>OVM</th>\n" +
+    "<th>Status</th>\n" +
+    "<th>Age</th>\n" +
     "</tr>\n" +
     "</thead>\n" +
     "<tbody>\n" +
     "<tr ng-repeat=\"mergedVm in mergedVms track by mergedVm.vm.metadata.uid\" class=\"animate-repeat\">\n" +
     "<td>\n" +
-    "<a href=\"{{mergedVm.vm.metadata.name | navigateResourceURL : 'VirtualMachine' : mergedVm.vm.metadata.namespace}}\">{{mergedVm.vm.metadata.name}}</a>\n" +
+    "<a href=\"{{mergedVm.vm | navigateResourceURL}}\">{{mergedVm.vm.metadata.name}}</a>\n" +
     "</td>\n" +
     "<td>\n" +
-    "<vm-state state=\"mergedVm.vm.status.phase\"/>\n" +
+    "<vm-state state=\"mergedVm.vmi | vmStateText : mergedVm.vm\"/>\n" +
     "</td>\n" +
     "<td>\n" +
-    "<span>{{mergedVm.pod | vmPodUptime}}</span>\n" +
-    "</td>\n" +
-    "<td>\n" +
-    "<a ng-if=\"mergedVm.ovm\" href=\"{{mergedVm.ovm | navigateResourceURL : 'OfflineVirtualMachine'}}\">{{mergedVm.ovm.metadata.name}}</a>\n" +
+    "<span am-time-ago=\"mergedVm.ovm.metadata.creationTimestamp || mergedVm.vm.metadata.creationTimestamp\" am-without-suffix=\"true\"></span>\n" +
     "</td>\n" +
     "</tr>\n" +
     "</tbody>\n" +

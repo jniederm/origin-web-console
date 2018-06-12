@@ -32,6 +32,7 @@ angular.module('openshiftConsole').controller('OverviewController', [
   'RoutesService',
   'ServiceInstancesService',
   'KubevirtVersions',
+  'VmHelpers',
   OverviewController
 ]);
 
@@ -65,7 +66,8 @@ function OverviewController($scope,
                             ResourceAlertsService,
                             RoutesService,
                             ServiceInstancesService,
-                            KubevirtVersions) {
+                            KubevirtVersions,
+                            VmHelpers) {
   var overview = this;
   var limitWatches = $filter('isIE')();
   var DEFAULT_POLL_INTERVAL = 60 * 1000; // milliseconds
@@ -697,57 +699,43 @@ function OverviewController($scope,
     return true;
   };
 
-  function getOvmId(vm) {
-    var ownerReferences = vm.metadata.ownerReferences;
-    if (!ownerReferences) {
-      return null;
-    }
-    return _(ownerReferences)
-      .filter({ kind: 'OfflineVirtualMachine' })
-      .map('uid')
-      .first();
-  }
-
   function updateVirtualMachineMapping() {
     if (!overview.virtualMachines || !overview.virtualMachineInstances || !overview.pods) {
       return;
     }
-    var vmIdToPod = _(overview.pods)
-      .values()
-      .filter(function (pod) {
-        return !!_.get(pod, 'metadata.labels["kubevirt.io/vmUID"]');
-      })
-      .keyBy('metadata.labels["kubevirt.io/vmUID"]')
-      .value();
-    var ovmIdToVm = _(overview.virtualMachineInstances)
-      .values()
-      .filter(function (vm) {
-        return !!getOvmId(vm);
-      })
-      .keyBy(function (vm) {
-        return getOvmId(vm);
+
+    var vmNameToPods = _(overview.pods)
+      .groupBy(VmHelpers.getDomainName)
+      .mapValues(function (pods) {
+        return _.sortBy(pods, function (pod) {
+          return new Date(pod.metadata.creationTimestamp);
+        });
       })
       .value();
-    var podsOfOvms = [];
-    _.each(overview.virtualMachines, function (ovm) {
-      var ovmId = ovm.metadata.uid;
-      var vm = ovmIdToVm[ovmId];
-      if (!vm) {
+    var vmIdToVmi = _(overview.virtualMachineInstances)
+      .values()
+      .keyBy(VmHelpers.getVmReferenceId)
+      .value();
+    var podsOfVms = [];
+    _.each(overview.virtualMachines, function (vm) {
+      var vmId = vm.metadata.uid;
+      var vmi = vmIdToVmi[vmId];
+      if (!vmi) {
         return;
       }
-      ovm._vm = vm;
-      var pod = vmIdToPod[vm.metadata.uid];
-      if (!pod) {
+      vm._vmi = vmi;
+      var pods = vmNameToPods[vmi.metadata.name];
+      if (!pods) {
         return;
       }
-      ovm._pod = pod;
-      podsOfOvms.push(pod);
+      vm._pods = pods;
+      podsOfVms = podsOfVms.concat(pods);
     });
     // don't consider virt-launcher pods of offline virtual machines monopods
     if (overview.monopods) {
       overview.monopods = _(overview.monopods)
         .filter(function (pod) {
-          return !_.includes(podsOfOvms, pod);
+          return !_.includes(podsOfVms, pod);
         })
         .keyBy('metadata.name')
         .value();
