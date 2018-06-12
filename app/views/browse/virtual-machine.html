@@ -82,8 +82,8 @@
                       </dd>
                       <dt>Pod:</dt>
                       <dd>
-                        <span ng-if="!pods.length">--</span>
-                        <ul ng-if="pods.length" class="list-unstyled">
+                        <span ng-if="!(pods | size)">--</span>
+                        <ul ng-if="pods | size" class="list-unstyled">
                           <li ng-repeat="pod in pods track by pod.metadata.uid">
                             <a ng-href="{{pod | navigateResourceURL}}">{{pod.metadata.name}}</a>
                           </li>
@@ -96,10 +96,6 @@
                       Configuration
                     </h3>
                     <dl class="dl-horizontal left">
-                      <dt>Running:</dt>
-                      <dd>
-                        {{vm.spec.running}}
-                      </dd>
                       <dt>Memory:</dt>
                       <dd>
                         {{vm.spec.template | vmMemory | orDashes}}

@@ -14,14 +14,17 @@
       'ProjectsService',
       'KubevirtVersions',
       'VmActions',
-      'moment',
       'RdpService',
       VirtualMachineRow
     ],
     controllerAs: 'row',
     bindings: {
       apiObject: '<',
-      state: '<'
+      state: '<',
+      vm: '<',
+      vmi: '<',
+      pods: '<',
+      services: '<'
     },
     templateUrl: 'views/overview/_virtual-machine-row.html'
   });
@@ -40,7 +43,6 @@
     ProjectsService,
     KubevirtVersions,
     VmActions,
-    moment,
     RdpService) {
     var row = this;
     row.KubevirtVersions = KubevirtVersions;
@@ -49,61 +51,28 @@
     _.extend(row, ListRowUtils.ui);
     row.actionsDropdownVisible = function () {
       // no actions on those marked for deletion
-      if (_.get(row.apiObject, 'metadata.deletionTimestamp')) {
+      if (_.get(row.vm, 'metadata.deletionTimestamp')) {
         return false;
       }
 
-      return $filter('canIDoAny')('virtualMachineInstances');
+      return $filter('canIDoAny')('virtualMachineInstances') || $filter('canIDoAny')('virtualMachines');
     };
     row.projectName = $routeParams.project;
 
-    function createOvmCopy() {
-      var copy = angular.copy(row.apiObject);
+    row.vmCopy = function() {
+      var copy = angular.copy(row.vm);
       delete copy._pod;
       delete copy._vm;
+      delete copy._services;
       return copy;
     }
 
-    function setOvmRunning(running) {
-      var startedOvm = createOvmCopy();
-      startedOvm.spec.running = running;
-      return DataService.update(
-        KubevirtVersions.virtualMachine.resource,
-        startedOvm.metadata.name,
-        startedOvm,
-        $scope.$parent.context
-      );
-    }
-
-    row.isOvmRunning = function () {
-      return row.apiObject.spec.running;
-    };
-    row.isOvmInRunningPhase = function () {
-      return row.isOvmRunning() &&
-        row.apiObject._vm &&
-        _.get(row.apiObject, '_pod.status.phase') === 'Running';
-    };
-    row.startOvm = function () {
-      setOvmRunning(true);
-    };
-    row.stopOvm = function () {
-      setOvmRunning(false);
-    };
-    row.restartOvm = function () {
-      return DataService.delete(
-        KubevirtVersions.virtualMachineInstance,
-        row.apiObject._vm.metadata.name,
-        $scope.$parent.context
-      );
-    };
     row.isWindowsVM = function () {
       // https://github.com/kubevirt/kubevirt/blob/576d232e3c181134e69719cdb2d624ac52e7eecb/docs/devel/guest-os-info.md
-      var ovm = row.apiObject;
-      var vm = row.apiObject._vm;
-      var os = _.get(vm, ['metadata', 'labels', 'kubevirt.io/os']) || _.get(ovm, ['metadata', 'labels', 'kubevirt.io/os']);
-      return (os && _.startsWith(os, 'win'));
+      var os = _.get(row.vmi, 'metadata.labels["kubevirt.io/os"]') ;
+      return os && _.startsWith(os, 'win');
     };
-    row.isRdpService = function () {
+    row.isRdpService = function () { // TODO check / delete
       var ovm = row.apiObject;
       return !_.isEmpty(ovm.services);
     };
@@ -112,12 +81,12 @@
      * Requires Service object to be created:
      *   https://github.com/kubevirt/user-guide/blob/master/workloads/virtual-machines/expose-service.md
      */
-    row.onOpenRemoteDesktop = function () {
+    row.onOpenRemoteDesktop = function () { // TODO move to RdpService
       var ovm = row.apiObject;
       if (_.isEmpty(ovm.services)) {
         return ;
       }
-      var service = _.find(ovm.services, function (service) {return RdpService.findRDPPort(service, RDP_PORT);}); // a service which one of the ports is RDP
+      var service = _.find(services, function (service) {return RdpService.findRDPPort(service, RDP_PORT);}); // a service which one of the ports is RDP
       var addressPort = RdpService.getAddressPort(service, ovm, RDP_PORT);
       if (addressPort) {
         RdpService.fileDownload(RdpService.buildRdp(addressPort.address, addressPort.port));
@@ -125,18 +94,4 @@
     };
   }
 
-  // TODO delete
-  angular.module('openshiftConsole').filter('vmPodUptime', function () {
-    return function (pod) {
-      var computeContainerStartTime = _(_.get(pod, 'status.containerStatuses'))
-        .filter({ name: "compute" })
-        .map('state.running.startedAt')
-        .first();
-      var startTime = computeContainerStartTime || _.get(pod, 'status.startTime');
-      if (!startTime) {
-        return '--';
-      }
-      return moment(startTime).fromNow(true);
-    };
-  });
 })();

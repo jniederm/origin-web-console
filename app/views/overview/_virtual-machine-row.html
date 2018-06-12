@@ -9,19 +9,19 @@
           <div class="component-label">
             <span>Virtual Machine</span>
           </div>
-          <a ng-href="{{row.apiObject | navigateResourceURL}}">
+          <a ng-href="{{row.vm | navigateResourceURL}}">
             <span ng-bind-html="row.apiObject.metadata.name | highlightKeywords : row.state.filterKeywords"></span>
           </a>
         </h3>
       </div>
-      <div ng-if="row.state.showMetrics && (row.state.breakpoint === 'md' || row.state.breakpoint === 'lg') && row.apiObject._pod" class="list-pf-details">
+      <div ng-if="row.state.showMetrics && (row.state.breakpoint === 'md' || row.state.breakpoint === 'lg') && row.pods[0]" class="list-pf-details">
         <metrics-summary
-          pods="[row.apiObject._pod]"
-          containers="row.apiObject._pod.spec.containers">
+          pods="[row.pods[0]]"
+          containers="row.pods[0].spec.containers">
         </metrics-summary>
       </div>
       <div class="list-pf-details">
-        <vm-state ng-if="!row.expanded" state="row.apiObject._vm | vmStateText : row.apiObject"></vm-state>
+        <vm-state ng-if="!row.expanded" state="row.vmi | vmStateText : row.vm"></vm-state>
       </div>
     </div>
     <div class="list-pf-actions">
@@ -32,24 +32,24 @@
         </button>
         <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu role="menu">
           <dropdown-item
-            action="row.VmActions.start(row.apiObject, row.state.context)"
+            action="row.VmActions.start(row.vmCopy(), row.state.context)"
             ng-if="row.KubevirtVersions.virtualMachine | canI : 'update'"
-            enabled="row.VmActions.canStart(row.apiObject)">Start</dropdown-item>
+            enabled="row.VmActions.canStart(row.vm)">Start</dropdown-item>
           <dropdown-item
-            action="row.VmActions.restart(row.apiObject._vm, row.state.context)"
+            action="row.VmActions.restart(row.vmi, row.state.context)"
             ng-if="row.KubevirtVersions.virtualMachineInstance | canI : 'delete'"
             enabled="row.VmActions.canRestart(row.apiObject._vm, row.apiObject)">Restart</dropdown-item>
           <dropdown-item
-            action="row.VmActions.stop(row.apiObject, row.state.context)"
+            action="row.VmActions.stop(row.vmCopy(), row.state.context)"
             ng-if="row.KubevirtVersions.virtualMachine | canI : 'update'"
-            enabled="row.VmActions.canStop(row.apiObject)">Stop</dropdown-item>
+            enabled="row.VmActions.canStop(row.vm)">Stop</dropdown-item>
           <li ng-if="row.KubevirtVersions.virtualMachine | canI : 'update'">
-            <a ng-href="{{row.apiObject | editYamlURL}}" role="button">Edit YAML</a>
+            <a ng-href="{{row.vm | editYamlURL}}" role="button">Edit YAML</a>
           </li>
           <li ng-if="row.KubevirtVersions.virtualMachine | canI : 'delete'">
             <delete-link
-              kind="OfflineVirtualMachine"
-              group="{{row.OfflineVirtualMachineVersion.group}}"
+              kind={{row.KubevirtVersions.virtualMachine.kind}}
+              group="{{row.KubevirtVersions.virtualMachine.group}}"
               stay-on-current-page="true"
               resource-name="{{row.apiObject.metadata.name}}"
               project-name="{{row.projectName}}">
@@ -64,14 +64,9 @@
 
       <div class="word-break">
         <span class="vm-detail-key">State:</span>
-
-        <vm-state state="row.apiObject._vm | vmStateText : row.apiObject" ></vm-state>
-        <vm-actions-line vmi="row.apiObject._vm" ovm="row.apiObject" context="row.state.context"></vm-actions-line>
-      </div>
-
-      <div class="word-break">
-        <span class="vm-detail-key">Uptime:</span>
-        <span class="vm-detail-value">{{ row.apiObject._pod | vmPodUptime }}</span>
+        &nbsp;
+        <vm-state state="row.vmi | vmStateText : row.vmi" ></vm-state>
+        <vm-actions-line vmi="row.vmi" vm="row.vm" context="row.state.context"></vm-actions-line>
       </div>
 
       <div class="word-break" ng-if="row.isWindowsVM() && row.isOvmInRunningPhase()">
@@ -84,7 +79,27 @@
 
       <div class="word-break">
         <span class="vm-detail-key">Operating System:</span>
-        <span class="vm-detail-value">{{row.apiObject.metadata.labels['kubevirt.io/os'] || '--'}}</span>
+        <span class="vm-detail-value">{{row.vm.spec.template | vmOs | orDashes }}</span>
+      </div>
+
+      <div class="word-break">
+        <span class="vm-detail-key">Virtual Machine Instance:</span>
+        <span class="vm-detail-value" >
+          <a ng-href="{{row.vmi | navigateResourceURL}}" ng-if="row.vmi">{{row.vmi.metadata.name}}</a>
+          <span ng-if="!row.vmi">--</span>
+        </span>
+      </div>
+
+      <div class="word-break">
+        <span class="vm-detail-key">Pod:</span>
+        <span class="vm-detail-value" >
+          <span ng-if="!(row.pods | size)">--</span>
+          <ul ng-if="row.pods | size" class="list-unstyled" style="display: inline-block;">
+            <li ng-repeat="pod in row.pods track by pod.metadata.uid">
+              <a ng-href="{{pod | navigateResourceURL}}">{{pod.metadata.name}}</a>
+            </li>
+          </ul>
+        </span>
       </div>
 
     </div>
